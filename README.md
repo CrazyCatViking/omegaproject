@@ -5,6 +5,7 @@ Welcome to the Omega Project.
 Omega aims to be a simple extensible discord bot to simplify rapid development of new bot features.
 
 About:
+
 Omega is a simple extensible discord bot running on node.js, 
 using the Discord.js library for interaction with the Discord API.
 
