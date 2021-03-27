@@ -1,0 +1,19 @@
+{
+    "name": "omega",
+    "version": "3.0.0",
+    "description": "Simple, extensible discord bot",
+    "main": "omega.js",
+    "author": "Kristoffer Jansen",
+    "dependencies": {
+        "@types/ws": "^7.4.0",
+        "@xivapi/js": "^0.3.2",
+        "bent": "^7.3.12",
+        "canvas": "^2.7.0",
+        "discord.js": "^12.5.1",
+        "mongodb": "^3.6.4"
+    },
+    "devDependencies": {
+        "@types/mongodb": "^3.6.10",
+        "@types/node": "^14.14.22"
+    }
+}

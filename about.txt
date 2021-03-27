@@ -1,0 +1,7 @@
+This is the next major version of the Omega Extensible Discord Bot.
+Planned new features and improvements for this version are:
+- Integration with discord interaction API, initialy the slash command system
+- Better interface between Extensions and the Bot
+- Better database interaction system to make it simpler to use
+- More unified system for handling interaction with guilds
+- Standardize extension methods to make it easier to build them

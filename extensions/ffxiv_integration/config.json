@@ -1,0 +1,9 @@
+{
+    "namespace": "ff",
+    "useDB": true,
+    "legacyMode": true,  
+    "subCommands": ["iam", "whois", "whoami", "gear"],
+    "events": [],
+    "help": {
+            }
+}

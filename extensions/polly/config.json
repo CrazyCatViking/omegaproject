@@ -1,0 +1,13 @@
+{
+    "namespace": "poll",
+    "useDB": true,
+    "legacyMode": true,  
+    "subCommands": ["list", "create", "post", "end", "delete"],
+    "events": ["reactionAdd", "reactionRemove"],
+    "help": {"list": {"syntax": "", "tooltip": "Returns a list of stored polls."}, 
+             "create": {"syntax": "[pollId] [pollName] [pollItem 1... + pollItem 9] #flags", "tooltip": "Creates a new poll with the given id, name and items. Use the #multivote flag to enable users to vote for multiple options."},
+             "post": {"syntax": "[pollId]", "tooltip": "Posts the poll with the corresponding poll id"},
+             "end": {"syntax": "[pollId]", "tooltip": "Ends the posted poll with the corresponding poll id"},
+             "delete": {"syntax":  "[pollId", "tooltip": "Deletes and unposted poll"}
+            }
+}
