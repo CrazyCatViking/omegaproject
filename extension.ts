@@ -60,6 +60,10 @@ export class Extension extends EventEmitter {
         return;
     }
 
+    messageDelete(message: Discord.Message | Discord.PartialMessage) {
+        return;
+    }
+
 
     //Methods that handle database interaction
     dbUpdate() {

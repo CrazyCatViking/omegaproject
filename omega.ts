@@ -59,6 +59,8 @@ client.on("guildDelete", async (guild) => {
 client.on('message', (message) => {
     if (message.author.bot) return;
 
+    if (message.guild === null) return;
+
     let guildId = message.guild?.id;
     if (guildId === undefined) return;
 
@@ -67,7 +69,9 @@ client.on('message', (message) => {
 
 //Handles the event emitted when a reaction is added to a message in a connected guild/server
 client.on('messageReactionAdd', (reaction, user) => {
-    if (user.bot) return;
+    if (user.bot) return;  
+
+    if (reaction.message.guild === null) return;
 
     let guildId = reaction.message.guild?.id;
     if (guildId === undefined) return;
@@ -79,13 +83,22 @@ client.on('messageReactionAdd', (reaction, user) => {
 client.on('messageReactionRemove', (reaction, user) => {
     if (user.bot) return;
 
+    if (reaction.message.guild === null) return;
+
     let guildId = reaction.message.guild?.id;
     if (guildId === undefined) return;
 
     connectedGuilds[guildId].reactionRemove(reaction, user) //Forwards event to correct guild/server
 });
 
-//Additional eventhandlers come here.
+client.on('messageDelete', (message) => {
+    if (message.guild === null) return;
+
+    let guildId = message.guild?.id;
+    if (guildId === undefined) return;
+
+    connectedGuilds[guildId].messageDelete(message);
+});
 
 
 

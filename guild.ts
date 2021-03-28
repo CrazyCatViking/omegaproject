@@ -100,6 +100,15 @@ export class Guild {
             this.extensionManager.extensions[namespace].reactionRemove(reaction, user);
         }
     }
+
+    //Handles the 'messageDelete' event and forwards it to extensions registered for the event
+    messageDelete(message: Discord.Message | Discord.PartialMessage) {
+        let extensionList = this.extensionManager.events['messageDelete'];
+        for (let i in extensionList) {
+            let namespace: string = extensionList[i];
+            this.extensionManager.extensions[namespace].messageDelete(message);
+        }   
+    }
 }
 
 

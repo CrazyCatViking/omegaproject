@@ -9,10 +9,11 @@
     To use this extension you have to get an api key for the XIVAPI and make sure you have the supplied fonts installed on your host.
 */
 
-import { Guild, Message, GuildMember, MessageEmbed, User } from "discord.js";
+import { Guild, Message, GuildMember, MessageEmbed, User, MessageReaction, PartialUser, PartialMessage } from "discord.js";
 import { Extension } from "../../extension";
 import { createCanvas, loadImage, Image } from "canvas";
-import { createEmbed } from "../../omegaToolkit";
+import { createEmbed, getStringArguments, checkFlags, getCustomEmojiData } from "../../omegaToolkit";
+import { MessageTracker } from "../../extensionTools/messageTracker";
 
 //Dependencies for XIVAPI
 const XIVAPI = require('@xivapi/js');
@@ -31,12 +32,16 @@ export function createExtension() {
 class FFXIV_Integration extends Extension {
     xiv: any; //XIVAPI object
     chrProfiles: {[discordId: string]: any}; //Stored character profiles
+    messageTracker: MessageTracker; //Tracks Messages
+    cache: {[chrId: string]: {chrProfile: any, timestamp: number}}; //Caches chrprofiles for 3 hours
 
     constructor() {
         //Sets initial values
         super();
         this.xiv = new XIVAPI(ffxiv_auth); //Initializes the XIVAPI
         this.chrProfiles = {};
+        this.messageTracker = new MessageTracker();
+        this.cache = {};
     }
 
     //Initialize extension
@@ -48,12 +53,12 @@ class FFXIV_Integration extends Extension {
         }
         
         this.chrProfiles = this.databaseObject.chrProfiles;
+        if (this.databaseObject.trackedMessages !== undefined) this.messageTracker.init(this.databaseObject.trackedMessages, guild);
     }
 
     //Commands
     //Registers the queried ffxiv character to the discord user
     async iam(args: string[], message: Message) {
-        console.log("Iam");
         let chrForename: string = args[0];
         let chrSurname: string = args[1];
         let chrServer: string = args[2];
@@ -69,32 +74,18 @@ class FFXIV_Integration extends Extension {
 
         //Starts creating the reponse
         message.channel.startTyping();
+
         //Queries XIVAPI for the requested character
-        let searchObject: any;
+        let result: any;
         try {
-            searchObject = await this.xiv.character.search(chrForename + " " + chrSurname, {server: chrServer});
-        } catch {
-            let embed = createEmbed("The request timed out, please try again.");
-            message.channel.send(embed);
-            message.channel.stopTyping();
-            return;
-        }
-        //Checks if query contains a single valid result
-        let searchResult: any[] = searchObject["Results"];
-        if (searchResult.length === 0) {
-            let embed = createEmbed("There were no characters with the name **" + chrForename + "** **" + chrSurname + "** on **" + chrServer + "**");
-            message.channel.send(embed);
-            message.channel.stopTyping();
-            return;
-        }
-        if (searchResult.length > 1) {
-            let embed = createEmbed("Hmmm, strange. There were multiple results. Please try again.");
-            message.channel.send(embed);
+            result = await getXivCharacter(chrForename + " " + chrSurname, chrServer, this.xiv);
+        } catch (error) {
+            message.channel.send(createEmbed(error));
             message.channel.stopTyping();
             return;
         }
 
-        if (searchResult.length === 1) chrProfile = searchResult[0]; //Sets chrProfile if there was only one valid result
+        chrProfile = result;
 
         //Updates database 
         let member = message.member as GuildMember;
@@ -128,7 +119,7 @@ class FFXIV_Integration extends Extension {
         let getProfile: any;
         //Queries for character information from the XIVAPI
         try {
-            getProfile = await this.xiv.character.get(thisChrProfile.ID, {extended: 1, data: "CJ"});
+            getProfile = await this.getXivProfile(thisChrProfile.ID, this.xiv, ["MIMO"]);
         } catch {
             let embed = createEmbed("The request timed out, please try again.");
             message.channel.send(embed);
@@ -139,7 +130,7 @@ class FFXIV_Integration extends Extension {
         let chrProfile = getProfile.Character;
 
         //Generate response graphics and send it
-        let profileEmbed = await this.generateProfileEmbed(chrProfile);
+        let profileEmbed = await generateProfileEmbed(chrProfile);
         message.channel.send(profileEmbed);
         message.channel.stopTyping();
     }
@@ -152,20 +143,18 @@ class FFXIV_Integration extends Extension {
             message.channel.startTyping();
             for (var i in users) {
                 if (this.chrProfiles[users[i].id] !== undefined) {
-                    let thisChrSave: any = this.chrProfiles[users[i].id];
+                    let thisChrProfile: any = this.chrProfiles[users[i].id];
                     let getProfile: any;
                     try {
-                        getProfile = await this.xiv.character.get(thisChrSave.ID, {extended: 1, data: "CJ"});
+                        getProfile = await this.getXivProfile(thisChrProfile.ID, this.xiv, ["MIMO"]);
                     } catch {
                         let embed = createEmbed("The request timed out, please try again.");
                         message.channel.send(embed);
-                        message.channel.stopTyping();
-                        return;
                     }
                 
                     let chrProfile: any = getProfile.Character;
 
-                    let embedResponse = await this.generateProfileEmbed(chrProfile);
+                    let embedResponse = await generateProfileEmbed(chrProfile);
                     await message.channel.send(embedResponse);
                 }
             }
@@ -189,39 +178,19 @@ class FFXIV_Integration extends Extension {
 
             //creates resobse
             message.channel.startTyping();
-            let chrResult: any;
-            
-            //Queries for Character
-            let searchObject
+            let result: any;
             try {
-                searchObject = await this.xiv.character.search(chrForename + " " + chrSurname, {server: chrServer});
-            } catch {
-                let embed = createEmbed("The request timed out, please try again.");
-                message.channel.send(embed);
+                result = await getXivCharacter(chrForename + " " + chrSurname, chrServer, this.xiv);
+            } catch (error) {
+                message.channel.send(createEmbed(error));
                 message.channel.stopTyping();
                 return;
             }
 
-            //Checks if results are valid
-            let searchResult: any[] = searchObject["Results"];
-            if (searchResult.length === 0) {
-                let embed = createEmbed("There were no characters with the name **" + chrForename + "** **" + chrSurname + "** on **" + chrServer + "**");
-                message.channel.send(embed);
-                message.channel.stopTyping();
-                return;
-            }
-            if (searchResult.length > 1) {
-                let embed = createEmbed("Hmmm, strange. There were multiple results. Please try again.");
-                message.channel.send(embed);
-                message.channel.stopTyping();
-                return;
-            }
-
-            //If results are valid, queries for character information
-            if (searchResult.length === 1) chrResult = searchResult[0];
+            //If results are valid, queries for character information'
             let getProfile: any;
             try {
-                getProfile = await this.xiv.character.get(chrResult.ID, {extended: 1, data: "CJ"});
+                getProfile = await this.getXivProfile(result.ID, this.xiv, ["MIMO"]);
             } catch {
                 let embed = createEmbed("The request timed out, please try again.");
                 message.channel.send(embed);
@@ -232,13 +201,13 @@ class FFXIV_Integration extends Extension {
             let chrProfile: any = getProfile.Character;
 
             //Generates graphivs and response and sends to user
-            let embedResponse = await this.generateProfileEmbed(chrProfile);
+            let embedResponse = await generateProfileEmbed(chrProfile);
             message.channel.send(embedResponse);
             message.channel.stopTyping();
         }
     }
 
-    //Returns graphiv with information about characters gear for mention users character, callers character or queried character
+    //Returns graphics with information about characters gear for mention users character, callers character or queried character
     async gear(args: string[], message: Message) {
         let member = message.member as GuildMember;
 
@@ -248,11 +217,11 @@ class FFXIV_Integration extends Extension {
             message.channel.startTyping();
             for (var i in users) {
                 if (this.chrProfiles[users[i].id] !== undefined) {
-                    let thisChrSave: any = this.chrProfiles[users[i].id];
+                    let thisChrProfile: any = this.chrProfiles[users[i].id];
                     let getProfile: any;
                     //Queries for character information and returns graphics with gear information
                     try {
-                        getProfile = await this.xiv.character.get(thisChrSave.ID, {extended: 1, data: "CJ"});
+                        getProfile = await this.getXivProfile(thisChrProfile.ID, this.xiv, ["MIMO"]);
                     } catch {
                         let embed = createEmbed("The request timed out, please try again.");
                         message.channel.send(embed);
@@ -262,7 +231,7 @@ class FFXIV_Integration extends Extension {
                     
                     let chrProfile: any = getProfile.Character;
 
-                    let embedResponse = await this.generateGearEmbed(chrProfile);
+                    let embedResponse = await generateGearEmbed(chrProfile);
                     await message.channel.send(embedResponse);
                 }
             }
@@ -284,39 +253,19 @@ class FFXIV_Integration extends Extension {
             }
 
             message.channel.startTyping();
-            let chrResult: any;
-            let searchObject: any;
-            //Query for character
+            let result: any;
             try {
-                searchObject = await this.xiv.character.search(chrForename + " " + chrSurname, {server: chrServer});
-            } catch {
-                let embed = createEmbed("The request timed out, please try again.");
-                message.channel.send(embed);
-                message.channel.stopTyping();
-                return;
-            }
-
-            //Chech if results are valid
-            let searchResult: any[] = searchObject["Results"];
-            if (searchResult.length === 0) {
-                let embed = createEmbed("There were no characters with the name **" + chrForename + "** **" + chrSurname + "** on **" + chrServer + "**");
-                message.channel.send(embed);
-                message.channel.stopTyping();
-                return;
-            }
-            if (searchResult.length > 1) {
-                let embed = createEmbed("Hmmm, strange. There were multiple results. Please try again.");
-                message.channel.send(embed);
+                result = await getXivCharacter(chrForename + " " + chrSurname, chrServer, this.xiv);
+            } catch (error) {
+                message.channel.send(createEmbed(error));
                 message.channel.stopTyping();
                 return;
             }
 
             //If results are valid, query for character gear information
-            if (searchResult.length === 1) chrResult = searchResult[0];
-
             let getProfile: any;
             try {
-                getProfile = await this.xiv.character.get(chrResult.ID, {extended: 1, data: "CJ"});
+                getProfile = await this.getXivProfile(result.ID, this.xiv, ["MIMO"]);
             } catch {
                 let embed = createEmbed("The request timed out, please try again.");
                 message.channel.send(embed);
@@ -327,7 +276,7 @@ class FFXIV_Integration extends Extension {
             let chrProfile: any = getProfile.Character;
 
             //Generate gear graphics and return to user
-            let embedResponse = await this.generateGearEmbed(chrProfile);
+            let embedResponse = await generateGearEmbed(chrProfile);
             message.channel.send(embedResponse);
             message.channel.stopTyping();
         } else {
@@ -340,8 +289,8 @@ class FFXIV_Integration extends Extension {
             let getProfile: any;
             //Query for character gear information
             try {
-                getProfile = await this.xiv.character.get(thisChrProfile.ID, {extended: 1, data: "CJ"});
-            } catch {
+                getProfile = await this.getXivProfile(thisChrProfile.ID, this.xiv, ["MIMO"]);
+            } catch (error) {
                 let embed = createEmbed("The request timed out, please try again.");
                 message.channel.send(embed);
                 message.channel.stopTyping();
@@ -351,19 +300,332 @@ class FFXIV_Integration extends Extension {
             let chrProfile = getProfile.Character;
             
             //Generate gear graphics and return to user
-            let profileEmbed = await this.generateGearEmbed(chrProfile);
+            let profileEmbed = await generateGearEmbed(chrProfile);
             message.channel.send(profileEmbed);
             message.channel.stopTyping();
         }
     }
 
-    //Creates custom image and returns it in an embed
-    private async generateProfileEmbed(chrProfile: any) {
+    //Returns information if a xiv character has a mount
+    async hasmount(args: string[], message: Message) {
+        let member = message.member as GuildMember;
+        let mount = args[0];
+        let hasMount: {[chrName: string]: boolean} = {};
+
+        //Query based on mentions
+        let users: User[] = message.mentions.users.array();
+        if (users.length !== 0) {
+            message.channel.startTyping();
+            for (let i in users) {
+                if (this.chrProfiles[users[i].id] !== undefined) {
+                    let thisChr = this.chrProfiles[users[i].id];
+                    let profile: any;
+                    try {
+                        profile = await this.getXivProfile(thisChr.ID, this.xiv, ["MIMO"]);
+                    } catch (error) {
+                        let embed = createEmbed(error);
+                        message.channel.send(embed);
+                        return;
+                    }
+
+                    if (profile !== undefined) {
+                        let mounts: {Icon: string, Name: string}[] = profile.Mounts;
+                        if (mounts.find(object => object.Name === mount) !== undefined) {
+                            hasMount[profile.Character.Name] = true;
+                        } else {
+                            hasMount[profile.Character.Name] = false;
+                        }
+                    }
+                }
+            }
+
+            let response: string = "**Checked if the following have: " + mount + "**\n\n";
+            for (let chrName in hasMount) {
+                response = response + "**" + chrName + "**: " + hasMount[chrName] + "\n";
+            }
+
+            let embed = createEmbed(response);
+            message.channel.send(embed);
+            message.channel.stopTyping();
+
+            return;
+        }
+
+        //Query based on tracked post
+        let messageFlag: string = args[1];
+        if (messageFlag === "#message") {
+            message.channel.startTyping();
+            let messageId = args[2];
+            let emoji = args[3];
+            if (messageId === undefined) return;
+            if (emoji === undefined) return;
+
+            if (!this.messageTracker.isTracked(messageId)) return;
+
+            let emojiData = getCustomEmojiData(emoji);
+
+            let reactions = this.messageTracker.messages[messageId].reactions.cache.array();
+            let thisReaction = reactions.find(reaction => reaction.emoji.id === emojiData.id);
+            if (thisReaction === undefined) return;
+            
+            let users = thisReaction.users.cache.array();
+            for (let i in users) {
+                let user = users[i];
+                if (this.chrProfiles[user.id] !== undefined) {
+                    let profile: any;
+                    try {
+                        profile = await this.getXivProfile(this.chrProfiles[user.id].ID, this.xiv, ["MIMO"]);
+                    } catch (error) {
+                        console.log(error);
+                    }
+                    
+                    if (profile !== undefined) {
+                        let mounts: {Icon: string, Name: string}[] = profile.Mounts;
+                        if (mounts.find(object => object.Name === mount) !== undefined) {
+                            hasMount[profile.Character.Name] = true;
+                        } else {
+                            hasMount[profile.Character.Name] = false;
+                        }
+                    }
+                }
+            }
+
+            let response: string = "**Checked if the following have: " + mount + "**\n\n";
+            for (let chrName in hasMount) {
+                response = response + "**" + chrName + "**: " + hasMount[chrName] + "\n";
+            }
+
+            let embed = createEmbed(response);
+            message.channel.send(embed);
+            message.channel.stopTyping();
+
+            return;
+        }
+
+        //Query based on Chr search
+        let chrForename = args[1];
+        let chrSurname = args[2];
+        let chrServer = args[3];
+
+        if (chrForename !== undefined && chrSurname !== undefined && chrServer !== undefined) {
+            message.channel.startTyping();
+            let chr: any;
+            try {
+                chr = await getXivCharacter(chrForename + " " + chrSurname, chrServer, this.xiv);
+            } catch (error) {
+                message.channel.send(createEmbed(error));
+                message.channel.stopTyping();
+                return;
+            }
+
+            if (chr === undefined) return;
+
+            let profile: any;
+            try {
+                profile = await this.getXivProfile(chr.ID, this.xiv, ["MIMO"]);
+            } catch (error) {
+                message.channel.send(createEmbed(error));
+                message.channel.stopTyping();
+                return;
+            }
+
+            if (profile !== undefined) {
+                let mounts: {Icon: string, Name: string}[] = profile.Mounts;
+                if (mounts.find(object => object.Name === mount) !== undefined) {
+                    hasMount[profile.Character.Name] = true;
+                } else {
+                    hasMount[profile.Character.Name] = false;
+                }
+            } else {
+                return;
+            }
+
+            let response: string = "**Checked if the following have: " + mount + "**\n\n";
+            for (let chrName in hasMount) {
+                response = response + "**" + chrName + "**: " + hasMount[chrName] + "\n";
+            }
+
+            let embed = createEmbed(response);
+            message.channel.send(embed);
+            message.channel.stopTyping();
+
+            return;
+        }
+
+        //Query based on caller
+        if (this.chrProfiles[member.id] !== undefined) {
+            message.channel.startTyping();
+            let chrProfile = this.chrProfiles[member.id];
+            let profile: any;
+
+            try {
+                profile = await this.getXivProfile(chrProfile.ID, this.xiv, ["MIMO"]);
+            } catch (error) {
+                let embed = createEmbed(error);
+                message.channel.send(embed);
+                return;
+            }
+
+            if (profile !== undefined) {
+                let mounts: {Icon: string, Name: string}[] = profile.Mounts;
+                if (mounts.find(object => object.Name === mount) !== undefined) {
+                    hasMount[profile.Character.Name] = true;
+                } else {
+                    hasMount[profile.Character.Name] = false;
+                }
+            } else {
+                return;
+            }
+
+            let response: string = "**Checked if the following have: " + mount + "**\n\n";
+            for (let chrName in hasMount) {
+                response = response + "**" + chrName + "**: " + hasMount[chrName] + "\n";
+            }
+
+            let embed = createEmbed(response);
+            message.channel.send(embed);
+            message.channel.stopTyping();
+
+            return;
+        }
+    }
+
+    //Untracks a tracked post
+    async untrackMessage(args: string[], message: Message) {
+        let messageId = args[0];
+        if (!this.messageTracker.isTracked(messageId)) return;
+
+        this.messageTracker.untrackMessage(messageId);
+        let embed = createEmbed("The specified message has been untracked");
+        message.channel.send(embed);
+
+        let storableObject = this.messageTracker.getStorableObjet();
+        if (this.databaseObject !== undefined) this.databaseObject.trackedMessages = storableObject;
+        this.dbUpdate();
+    }
+
+    //Lists the tracked posts
+    async listTrackedMessages(args: string[], message: Message) {
+        let trackedMessages = this.messageTracker.getTrackedMessages();
+        let title = "**These are the currently tracked messages**";
+        let response = "";
+
+        for (let i in trackedMessages) {
+            let shortContent = trackedMessages[i].shortContent;
+            let url = trackedMessages[i].url;
+            let messageId = trackedMessages[i].messageId;
+            let channelName = trackedMessages[i].channelName;
+            response = response + "MessageID - **[" + messageId + "](" + url + ")**: " + shortContent + " in **" + channelName + "**\n\n"; 
+        }
+
+        let embed = createEmbed(response, {title: title});
+        message.channel.send(embed);
+    }
+
+    //Events
+    //Handles new messages
+    message(message: Message) {
+        let content = message.content;
+        let args = getStringArguments(content);
+        let checkedArgs = checkFlags(args);
+        let flags = checkedArgs.flags;
+
+        if (flags.includes("fftrack")) {
+            this.messageTracker.trackMessage(message);
+            let storableObject = this.messageTracker.getStorableObjet();
+            if (this.databaseObject !== undefined) this.databaseObject.trackedMessages = storableObject;
+            this.dbUpdate();
+        }
+    }
+
+    //Handles new reacitons 
+    reactionAdd(reactoion: MessageReaction, user: User | PartialUser) {
+
+    }
+
+    //Handles removed reactions
+    reactionRemove(reactoion: MessageReaction, user: User | PartialUser) {
+
+    }
+
+    //Handles deleted messages
+    messageDelete(message: Message | PartialMessage) {
+        let id = message.id;
+        if (this.messageTracker.isTracked(id)) {
+            this.messageTracker.untrackMessage(id);
+            let storableObject = this.messageTracker.getStorableObjet();
+            if (this.databaseObject !== undefined) this.databaseObject.trackedMessages = storableObject;
+            this.dbUpdate();
+        }
+    }
+
+    async getXivProfile(chrId: string, xivapi: any, options: string[]) {
+        let chrProfile: any;
+        let data: string = "";
+        let date = new Date();
+    
+        if (this.cache[chrId] !== undefined && (Math.abs(date.getHours() - this.cache[chrId].timestamp) < 3)) {
+            if (options.includes("MIMO")) {
+                if (this.cache[chrId].chrProfile.Mounts !== null) {
+                    return this.cache[chrId].chrProfile;
+                }
+            }
+            return this.cache[chrId].chrProfile;
+        }
+    
+        for (let i in options) {
+            data = data + options[i] + ",";
+        }
+    
+        try {
+            chrProfile = await xivapi.character.get(chrId, {extended: 1, data});
+        } catch {
+            throw ("The request timed out"); 
+        }
+
+        this.cache[chrId] = {chrProfile: chrProfile, timestamp: date.getHours()};
+        return chrProfile;
+    }
+}
+
+//Queries xivapi for characters matching the name and
+async function getXivCharacter(chrName: string, chrServer: string, xivapi: any) {
+    let searchObject: any;
+    let error: string;
+    try {
+        searchObject = await xivapi.character.search(chrName, {server: chrServer});
+    } catch (err) {
+        error = "The request failed, please try again.";
+        throw (error);
+    }
+
+    let results = searchObject["Results"];
+
+    if (results.length === 0) {
+        error = "There were no characters with the name **" + chrName + "** on **" + chrServer + "**"
+        throw (error);
+    } else if (results.length === 1) {
+        return results[0];
+    } else if (results.length > 1) {
+        for (let i in results) {
+            if (results[i].Name === chrName) {
+                return results[i];
+            }
+        }
+
+        error = "Hmmm, strange. There were multiple results, and none were the requested character. Please try again.";
+        throw (error);
+    }
+}
+
+//Methods for generating graphics
+//Creates custom image and returns it in an embed
+async function generateProfileEmbed(chrProfile: any) {
         //Implement pretty pretty image system
         var canvas = createCanvas(1280, 873);
         var ctx = canvas.getContext('2d');
 
-        let img: Buffer = await this.getImage(chrProfile.Portrait);
+        let img: Buffer = await getImage(chrProfile.Portrait);
         let profileImg = new Image();
         profileImg.src = img;
 
@@ -372,10 +634,10 @@ class FFXIV_Integration extends Extension {
         ctx.drawImage(profileImg, 640, 0);
         ctx.drawImage(frame, 0, 0);
 
-        this.drawText(chrProfile.Name, 320, 100, ctx, {"font": '70px ' + "OPTIEngeEtienne", "alignment": "center"});
-        this.drawText(chrProfile.Title.Name, 320, 150, ctx, {"font": '40px ' + ffxivfont, "alignment": "center"});
+        drawText(chrProfile.Name, 320, 100, ctx, {"font": '70px ' + "OPTIEngeEtienne", "alignment": "center"});
+        drawText(chrProfile.Title.Name, 320, 150, ctx, {"font": '40px ' + ffxivfont, "alignment": "center"});
 
-        this.drawLvlText(chrProfile.ClassJobs, ctx);
+        drawLvlText(chrProfile.ClassJobs, ctx);
 
         let finalImage: Buffer = canvas.toBuffer();
 
@@ -389,15 +651,14 @@ class FFXIV_Integration extends Extension {
 
         let profileEmbed: MessageEmbed = createEmbed(content, options);
         return profileEmbed;
-    }
-
-    //Returns gearEmbed
-    private async generateGearEmbed(chrProfile: any) {
+}
+//Returns gearEmbed
+async function generateGearEmbed(chrProfile: any) {
         var canvas = createCanvas(2000, 920);
         var ctx = canvas.getContext('2d');
         let gear: any = chrProfile.GearSet;
 
-        let img: Buffer = await this.getImage(chrProfile.Portrait);
+        let img: Buffer = await getImage(chrProfile.Portrait);
         let profileImg = new Image();
         profileImg.src = img;
 
@@ -407,9 +668,9 @@ class FFXIV_Integration extends Extension {
         ctx.drawImage(frame, 0, 0);
 
         let jobTxt = "LVL " + chrProfile.ActiveClassJob.Level + " " + chrProfile.ActiveClassJob.Job.Name;
-        this.drawText(jobTxt.toUpperCase(), 1000, 700, ctx, {"font": '40px ' + ffxivfont, "alignment": "center"});
-        this.drawText(chrProfile.Name, 1000, 780, ctx, {"font": '70px ' + "OPTIEngeEtienne", "alignment": "center"});
-        this.drawText(chrProfile.Title.Name, 1000, 830, ctx, {"font": '40px ' + ffxivfont, "alignment": "center"});
+        drawText(jobTxt.toUpperCase(), 1000, 700, ctx, {"font": '40px ' + ffxivfont, "alignment": "center"});
+        drawText(chrProfile.Name, 1000, 780, ctx, {"font": '70px ' + "OPTIEngeEtienne", "alignment": "center"});
+        drawText(chrProfile.Title.Name, 1000, 830, ctx, {"font": '40px ' + ffxivfont, "alignment": "center"});
 
         //Set default drawing coordinates and data
         let x = 600;  //Start X Pos
@@ -420,10 +681,10 @@ class FFXIV_Integration extends Extension {
         let r = 1;    //Starting row
         let drawData: {[data: string]: number} = {"x": x, "y": y, "dx": dx, "dim": dim, "off": off, "r": r};
 
-        await this.drawGearIcons(gear, ctx, drawData);
-        await this.drawGearLvl(gear, ctx, drawData);
-        await this.drawGearMelds(gear, ctx, drawData);
-        await this.drawGearText(gear, ctx, drawData);
+        await drawGearIcons(gear, ctx, drawData);
+        await drawGearLvl(gear, ctx, drawData);
+        await drawGearMelds(gear, ctx, drawData);
+        await drawGearText(gear, ctx, drawData);
 
         let finalImage: Buffer = canvas.toBuffer();
 
@@ -436,16 +697,14 @@ class FFXIV_Integration extends Extension {
         }
         let profileEmbed: MessageEmbed = createEmbed(content, options);
         return profileEmbed;
-    }
-
-    //Get image data and return as a buffer
-    private async getImage(URL: string) {
+}
+//Get image data and return as a buffer
+async function getImage(URL: string) {
         let image = await getBuffer(URL);
         return image;
-    }
-
-    //Draw Generic Text
-    private drawText(text: string, x: number, y: number, ctx: any, options?: {[option: string]: any}) {
+}
+//Draw Generic Text
+function drawText(text: string, x: number, y: number, ctx: any, options?: {[option: string]: any}) {
         var alignment: string = "left";
         var color: string = "rgb(255, 255, 255)";
         var font: string = "30px Liberation Serif";
@@ -488,10 +747,9 @@ class FFXIV_Integration extends Extension {
         }
 
         ctx.fillText(text, x , y);
-    }
-
-    //Draw lvl text on image
-    private drawLvlText(chrClassJobs: any, ctx: any) {
+}
+//Draw lvl text on image
+function drawLvlText(chrClassJobs: any, ctx: any) {
         let jobs: {[abr: string]: string} = {
             "MRD": "-",
             "DRK": "-",
@@ -557,11 +815,10 @@ class FFXIV_Integration extends Extension {
         }
 
 
-    }
-
-    //GEAR DRAWING METHODS
-    //Draw Gear Icons
-    private async drawGearIcons(gear: any, ctx: any, drawData: {[data: string]: number}) {
+}
+//GEAR DRAWING METHODS
+//Draw Gear Icons
+async function drawGearIcons(gear: any, ctx: any, drawData: {[data: string]: number}) {
         let items: {[item: string]: string} = {
             "MainHand": "",
             "Head": "",
@@ -590,7 +847,7 @@ class FFXIV_Integration extends Extension {
         let itemImgs: {[itemName: string]: Buffer} = {};
         for (var item in items) {
             if (items[item] !== "") {
-                let img: Buffer = await this.getImage(items[item]);
+                let img: Buffer = await getImage(items[item]);
                 itemImgs[item] = img;
             } else {
                 let imgLoad = await loadImage("./extensions/ffxiv_integration/ffxiv_integration_extension/empty_icon.png");
@@ -619,9 +876,9 @@ class FFXIV_Integration extends Extension {
 
             y = y + dim + off;
         }
-    }
-    //Draw Gear Lvl
-    private async drawGearLvl(gear: any, ctx: any, drawData: {[data: string]: number}) {
+}
+//Draw Gear Lvl
+async function drawGearLvl(gear: any, ctx: any, drawData: {[data: string]: number}) {
         let items: {[item: string]: string} = {
             "MainHand": "",
             "Head": "",
@@ -665,14 +922,14 @@ class FFXIV_Integration extends Extension {
                 alignment = "left";
             }
 
-            this.drawText(items[item], x, y, ctx, {"alignment": alignment, "font": "50px " + ffxivfont, "color": "orange"});
+            drawText(items[item], x, y, ctx, {"alignment": alignment, "font": "50px " + ffxivfont, "color": "orange"});
 
             y = y + dim + off;
         }
 
-    }
-    //Draw Gear Melds
-    private async drawGearMelds(gear: any, ctx: any, drawData: {[data: string]: number}) {
+}
+//Draw Gear Melds
+async function drawGearMelds(gear: any, ctx: any, drawData: {[data: string]: number}) {
         let items: {[item: string]: any} = {
             "MainHand": [],
             "Head": [],
@@ -704,7 +961,7 @@ class FFXIV_Integration extends Extension {
             for (var i in melds) {
                 let materia = melds[i];
                 if (meldIcons[materia.ID] === undefined) {
-                    let img: Buffer = await this.getImage("https://xivapi.com" + materia.Icon);
+                    let img: Buffer = await getImage("https://xivapi.com" + materia.Icon);
                     meldIcons[materia.ID] = img;
                 }
             }
@@ -748,9 +1005,9 @@ class FFXIV_Integration extends Extension {
             x = startX;
             y = y + dim + off;
         }
-    }
-    //Draw Gear Text
-    private async drawGearText(gear: any, ctx: any, drawData: {[data: string]: number}) {
+}
+//Draw Gear Text
+async function drawGearText(gear: any, ctx: any, drawData: {[data: string]: number}) {
         let items: {[item: string]: {[type: string]: string}} = {
             "MainHand": {},
             "Head": {},
@@ -796,11 +1053,10 @@ class FFXIV_Integration extends Extension {
                 alignment = "left";
             }
 
-            if (items[item].name !== undefined) this.drawText(items[item].name, x, y, ctx, {"alignment": alignment, "font": "25px " + ffxivfont, "color": "white"});
-            if (items[item].mirage !== undefined) this.drawText(items[item].mirage, x, y + 30, ctx, {"alignment": alignment, "font": "25px " + ffxivfont, "color": "orange"});
+            if (items[item].name !== undefined) drawText(items[item].name, x, y, ctx, {"alignment": alignment, "font": "25px " + ffxivfont, "color": "white"});
+            if (items[item].mirage !== undefined) drawText(items[item].mirage, x, y + 30, ctx, {"alignment": alignment, "font": "25px " + ffxivfont, "color": "orange"});
 
             y = y + dim + off;
         }
 
-    }
 }
