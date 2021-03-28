@@ -5,11 +5,11 @@
 */
 
 import Discord = require('discord.js');
-import {CommandManager} from './commandManager';
-import {ExtensionManager} from './extensionManager';
-import {DatabaseManager} from './databaseManager';
-import {PermissionManager} from './permissionManager';
-import {AdminTools} from './adminTools';
+import { CommandManager } from './commandManager';
+import { ExtensionManager } from './extensionManager';
+import { DatabaseManager } from './databaseManager';
+import { PermissionManager } from './permissionManager';
+import { AdminTools } from './adminTools';
 
 export class Guild {
     id: string; //The Discord unique guild/server id

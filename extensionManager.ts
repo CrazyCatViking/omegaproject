@@ -3,10 +3,10 @@
     and stores information on what extensions are registered for specific events. 
 */
 
-import {Extension} from './extension';
-import {CommandManager} from './commandManager';
-import {DatabaseManager} from './databaseManager';
-import {mapDir} from './omegaToolkit';
+import { Extension } from './extension';
+import { CommandManager } from './commandManager';
+import { DatabaseManager } from './databaseManager';
+import { mapDir } from './omegaToolkit';
 import { Guild } from 'discord.js';
 
 export class ExtensionManager {

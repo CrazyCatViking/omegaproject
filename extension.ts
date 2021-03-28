@@ -12,7 +12,7 @@
     Extensions need a config.json file with configuration information and information on commands, events and tootips.
 */
 
-import {EventEmitter} from "events";
+import { EventEmitter } from "events";
 import Discord = require("discord.js");
 
 //Example of create function used to create extensions at runtime. Needed for all extensions

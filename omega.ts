@@ -1,5 +1,5 @@
 import Discord = require('discord.js');
-import {Guild} from './guild';
+import { Guild } from './guild';
 const auth = require('./auth.json');
 
 //Initialize discord event intents
