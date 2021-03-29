@@ -33,7 +33,7 @@ class FFXIV_Integration extends Extension {
     xiv: any; //XIVAPI object
     chrProfiles: {[discordId: string]: any}; //Stored character profiles
     messageTracker: MessageTracker; //Tracks Messages
-    cache: {[chrId: string]: {chrProfile: any, timestamp: number}}; //Caches chrprofiles for 3 hours
+    cache: {[chrId: string]: {chrProfile: any, timestamp: {time: number, day: number}}}; //Caches chrprofiles for 3 hours
 
     constructor() {
         //Sets initial values
@@ -564,13 +564,14 @@ class FFXIV_Integration extends Extension {
         let data: string = "";
         let date = new Date();
     
-        if (this.cache[chrId] !== undefined && (Math.abs(date.getHours() - this.cache[chrId].timestamp) < 3)) {
+        if (this.cache[chrId] !== undefined && (Math.abs(date.getHours() - this.cache[chrId].timestamp.time) < 3) && date.getDay() === this.cache[chrId].timestamp.day) {
             if (options.includes("MIMO")) {
                 if (this.cache[chrId].chrProfile.Mounts !== null) {
                     return this.cache[chrId].chrProfile;
                 }
+            } else {
+                return this.cache[chrId].chrProfile;
             }
-            return this.cache[chrId].chrProfile;
         }
     
         for (let i in options) {
@@ -583,7 +584,7 @@ class FFXIV_Integration extends Extension {
             throw ("The request timed out"); 
         }
 
-        this.cache[chrId] = {chrProfile: chrProfile, timestamp: date.getHours()};
+        this.cache[chrId] = {chrProfile: chrProfile, timestamp: {time: date.getHours(), day: date.getDay()}};
         return chrProfile;
     }
 }
