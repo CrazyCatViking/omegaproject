@@ -22,4 +22,4 @@ How to run:
 - If you are using the FFXIV integration, make sure to add your API key to the config.json file in the ffxiv extension folder.
 - Install mongoDB on the local machine, make sure the mongo service is running.
 - Run: `npm install` to install all dependencies
-- Run: `npm start` to run Omega
+- Run: `npm start` from the pkg folder to run Omega

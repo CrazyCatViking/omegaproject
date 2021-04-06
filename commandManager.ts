@@ -141,6 +141,7 @@ export class CommandManager {
         return subCommand;
     }
 
+    //Checks for aliases
     checkAlias(_namespace: string): {namespace: string, subCommand: string} | undefined {
         let namespace: string = _namespace;
         let subCommand: string;
