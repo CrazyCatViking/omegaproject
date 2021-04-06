@@ -14,15 +14,12 @@ import { Extension } from "../../extension";
 import { createCanvas, loadImage, Image } from "canvas";
 import { createEmbed, getStringArguments, checkFlags, getCustomEmojiData } from "../../omegaToolkit";
 import { MessageTracker } from "../../extensionTools/messageTracker";
+import fetch = require('node-fetch');
 
 //Dependencies for XIVAPI
 const XIVAPI = require('@xivapi/js');
 const ffxiv_auth = require('./ffxiv_integration_extension/ffxiv_auth.json');
 const ffxivfont = 'AdventPro-Medium';
-
-//Dependencies for downloading graphics
-const bent = require('bent');
-const getBuffer = bent('buffer');
 
 //Creates and returns extension to caller
 export function createExtension() {
@@ -701,7 +698,8 @@ async function generateGearEmbed(chrProfile: any) {
 }
 //Get image data and return as a buffer
 async function getImage(URL: string) {
-        let image = await getBuffer(URL);
+        let request = await fetch.default(URL);
+        let image = request.buffer();
         return image;
 }
 //Draw Generic Text
@@ -848,7 +846,14 @@ async function drawGearIcons(gear: any, ctx: any, drawData: {[data: string]: num
         let itemImgs: {[itemName: string]: Buffer} = {};
         for (var item in items) {
             if (items[item] !== "") {
-                let img: Buffer = await getImage(items[item]);
+                let img: Buffer;
+                try {
+                    img = await getImage(items[item]);
+                } catch (error) {
+                    console.log(error);
+                    let imgLoad = await loadImage("./extensions/ffxiv_integration/ffxiv_integration_extension/empty_icon.png");
+                    img = imgLoad.src as Buffer;
+                }
                 itemImgs[item] = img;
             } else {
                 let imgLoad = await loadImage("./extensions/ffxiv_integration/ffxiv_integration_extension/empty_icon.png");
@@ -962,7 +967,15 @@ async function drawGearMelds(gear: any, ctx: any, drawData: {[data: string]: num
             for (var i in melds) {
                 let materia = melds[i];
                 if (meldIcons[materia.ID] === undefined) {
-                    let img: Buffer = await getImage("https://xivapi.com" + materia.Icon);
+                    let img: Buffer
+                    try {
+                        img = await getImage("https://xivapi.com" + materia.Icon);
+                    } catch (error) {
+                        console.log(error);
+                        let imgLoad = await loadImage("./extensions/ffxiv_integration/ffxiv_integration_extension/empty_icon.png");
+                        img = imgLoad.src as Buffer;
+                    }
+                    
                     meldIcons[materia.ID] = img;
                 }
             }
