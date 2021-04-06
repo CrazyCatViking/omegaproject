@@ -62,47 +62,108 @@ export class CommandManager {
         //Convert raw string to array containing single arguments
         let args: string[] = getStringArguments(message.content.substring(this.botCommand.length));
         let namespace = args[0]; //Extension namespace
-        let subCommand: string; //Extension subCommand
-        let commandArgs: string[]; //Command arguments
-
-        //Check if user has set a command alias
-        if (this.aliases[namespace] !== undefined) {
-            //Sets the correct subCommand and namespace if the command uses a user defined alias
-            subCommand = this.aliases[namespace].subCommand; 
-            namespace = this.aliases[namespace].namespace;
-            commandArgs = args.slice(1);
-        } else {
-            //If no alias is registered, use the namespace and subCommand supplied by the initial command
-            namespace = args[0];
-            subCommand = args[1];
-            commandArgs = args.slice(2);
-        }
-
-        //Handles the special case for adminTool commands
-        if (namespace === "admin" && this.adminTools !== undefined) {
-            if (this.commands[namespace] === undefined || !this.commands[namespace].includes(subCommand)) return; //Checks if namespace and subcommand are defined
-            if (!permissionManager.resolvePermissions(namespace, subCommand, message.member as Discord.GuildMember)) return; //Checks if the user who called the command has permissions to use it
-            
-            //Forwards the command to the adminTools
-            let adminTools = this.adminTools as any;
-            adminTools[subCommand](commandArgs, message);
-            return;
-        }
+        let subCommand: string = args[1]; //Extension subCommand
+        let commandArgs: string[] = args.slice(2); //Command arguments
 
         //Handles the special case for use of the help command
         if (namespace === "help") {
             this.help(subCommand, commandArgs, message, permissionManager, extensionManager);
             return;
         }
+
+        //Check if user has set a command alias
+        let aliasCheck = this.checkAlias(namespace);
+        if (aliasCheck !== undefined) {
+            namespace = aliasCheck.namespace;
+            subCommand = aliasCheck.subCommand;
+            commandArgs = args.slice(1);
+        } else {
+            //Check if casing is correct for namespace and subCommand if there are no aliases
+            namespace = this.checkNamespace(namespace);
+            if (this.commands[namespace] === undefined) return;
+
+            subCommand = this.checkSubCommand(namespace, subCommand);
+            if (!this.commands[namespace].includes(subCommand)) return;
+
+            commandArgs = args.slice(2);
+        }
+
+        //Handles the special case for adminTool commands
+        if (namespace === "admin" && this.adminTools !== undefined) {
+            //Checks if the user who called the command has permissions to use it
+            if (!permissionManager.resolvePermissions(namespace, subCommand, message.member as Discord.GuildMember)) return; 
+            
+            //Forwards the command to the adminTools
+            let adminTools = this.adminTools as any;
+            adminTools[subCommand](commandArgs, message);
+            return;
+        }
         
         //Handles normal commands
-        if (this.commands[namespace] === undefined || !this.commands[namespace].includes(subCommand)) return; //Check if namespace and subCommand are defined in the stored commands
         if (!extensionManager.extensions[namespace].enabled) return; //Checks if the specified extension is enabled
         if (!permissionManager.resolvePermissions(namespace, subCommand, message.member as Discord.GuildMember)) return; //Checks if user has permissions to use the called command
 
         //Forwards the command to the corresponding extension
         let extension = extensionManager.extensions[namespace] as any;
         extension[subCommand](commandArgs, message);
+    }
+
+    //Checks if letter casing is correct, gets correct casing if needed
+    checkNamespace(_namespace: string) {
+        let namespace: string = _namespace;
+
+        let lwrCaseNamespace = namespace.toLowerCase();
+        for (let key in this.commands) {
+            let lwrCaseKey = key.toLowerCase();
+            if (lwrCaseNamespace === lwrCaseKey) {
+                namespace = key;
+                break;
+            }
+        }
+
+        return namespace;
+    }
+
+    //Checks if letter casing is correct, gets correct casing if needed
+    checkSubCommand(_namespace: string, _subCommand: string) {
+        let subCommand = _subCommand;
+        
+        let lwrCaseSubCommand = subCommand.toLowerCase();
+        let commands: string[] = this.commands[_namespace];
+        for (let i in commands) {
+            let lwrCaseCommand = commands[i].toLowerCase();
+            if (lwrCaseSubCommand === lwrCaseCommand) {
+                subCommand = commands[i];
+                break;
+            }
+        }
+
+        return subCommand;
+    }
+
+    checkAlias(_namespace: string): {namespace: string, subCommand: string} | undefined {
+        let namespace: string = _namespace;
+        let subCommand: string;
+
+        if (this.aliases[namespace] === undefined) {
+            for (let alias in this.aliases) {
+                let lwrCaseAlias = alias.toLowerCase();
+                let lwrCaseNamespace = namespace.toLowerCase();
+                if (lwrCaseNamespace === lwrCaseAlias) {
+                    namespace = alias;
+                    break;
+                }
+            }
+        }
+
+        if (this.aliases[namespace] !== undefined) {
+            //Sets the correct subCommand and namespace if the command uses a user defined alias
+            subCommand = this.aliases[namespace].subCommand; 
+            namespace = this.aliases[namespace].namespace;
+            return {"namespace": namespace, "subCommand": subCommand};
+        } else {
+            return undefined;
+        }
     }
 
     //Help command for information regarding use of the bot and it's extensions
