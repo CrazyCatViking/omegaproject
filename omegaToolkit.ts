@@ -18,46 +18,32 @@ export function mapDir(dirPath: string): string[] {
 
 //Takes a raw string and splits it up into an array of individual arguments
 export function getStringArguments(rawString: string): string[] {
-    let argString: string = rawString;
+    let split = rawString.split(/ +/);
 
-    var l: number = argString.length;
-    var args: string[] = [];
-    var numArgs: number = 0;
-    var currentArg: string = "";
-
-    var compundArg: boolean = false;
-
-    for (var i = 0; i <= l - 1; i++) {
-        var chr: string = argString.charAt(i);
-
-        if (chr == ' ' && compundArg == false && !(currentArg == "")) {
-            args[numArgs] = currentArg;
-            numArgs++;
-            currentArg = "";
-        } else if ((chr == '"' || chr == '“') && compundArg == false) {
-            compundArg = true;
-        } else if ((chr == '"' || chr == '”') && compundArg == true) {
-            compundArg = false;
-            args[numArgs] = currentArg;
-            numArgs++;
-            currentArg = "";
+    let arrayPos = 0;
+    let compundArg: boolean = false;
+    let args: string[] = [];
+ 
+    for (let i in split) {
+        if (!compundArg) {
+            if (split[i].startsWith('"')) {
+                compundArg = true;
+                split[i] = split[i].replace(/"/, '');
+            }
+            args.push(split[i]);
+            arrayPos = args.length - 1;
         } else {
-            if (compundArg == true) {
-                currentArg = currentArg + chr;
-                if (i == l - 1) {
-                    args[numArgs] = currentArg;
-                    numArgs++;
-                }
-            } else if (!(chr == ' ')) {
-                currentArg = currentArg + chr;
-                if (i == l - 1) {
-                    args[numArgs] = currentArg;
-                    numArgs++;
-                }
+            if (split[i].endsWith('"')) {
+                args[arrayPos] += " " + split[i].replace(/"/, '');
+                arrayPos = 0;
+                compundArg = false;
+            } else {
+                args[arrayPos] += " " + split[i].replace(/"/, '');
             }
         }
     }
-    return (args);
+
+    return args;
 }
 
 //Check for flags "#flag"
