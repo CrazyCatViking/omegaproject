@@ -11,15 +11,15 @@
         "@types/ws": "^7.4.0",
         "@xivapi/js": "^0.3.2",
         "axios": "^0.21.1",
-        "bent": "^7.3.12",
         "canvas": "^2.7.0",
         "discord.js": "^12.5.1",
         "icanhazdadjoke-client": "^1.2.4",
-        "mongodb": "^3.6.4"
+        "mongodb": "^3.6.4",
+        "node-fetch": "^2.6.1"
     },
     "devDependencies": {
         "@types/mongodb": "^3.6.10",
-        "@types/node": "^14.14.22"
-    }  
+        "@types/node": "^14.14.22",
+        "@types/node-fetch": "^2.5.9"
+    }
 }
-
