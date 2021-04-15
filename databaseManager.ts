@@ -3,19 +3,23 @@
     to a specific guild only gives access to the guild specific mongoDB collection.
 */
 
+import EventEmitter = require('events');
 import mongo = require('mongodb'); //MongoDB Node.js Driver
 
 //Module for handling database interaction with mongoDB
-export class DatabaseManager {
+export class DatabaseManager extends EventEmitter {
     url: string; //URL to database
     guildId: string; //Unique Discord Guild id
     database: mongo.Db; //Instance of db from mongoDB node.js driver
+    changeStreams: {[listener: string]: mongo.ChangeStream}; //Change Stream for events when db upates
 
     constructor(id: string) {
+        super();
         //Set initial values
         this.url = "mongodb://localhost:27017";
         this.guildId = id;
         this.database = {} as mongo.Db;
+        this.changeStreams = {};
     }
 
     async init() {
@@ -25,16 +29,10 @@ export class DatabaseManager {
         this.database = db.db("omegabeta");
 
         //Check if guild collection already exists
-        let collectionExists = false;
         let collections = await this.database.listCollections({}, {"nameOnly": true}).toArray();
-        for (let collection in collections) {
-            if (collections[collection].name === this.guildId) {
-                collectionExists = true;
-                break;
-            }
-        }
 
-        if (collectionExists) return;
+        let collection = collections.find(coll => coll.name === this.guildId);
+        if (collection) return;
 
         //If guild collection is missing, create new collection
         await this.database.createCollection(this.guildId);
@@ -62,6 +60,14 @@ export class DatabaseManager {
     //Deletes existing document
     async deleteDocument(query: any) {
         //Implement deleteDocument method.
+    }
+
+    //Create change stream
+    registerChangeStream(listener: string, documentId: string) {
+        let changeStream = this.database.collection(this.guildId).watch();
+        changeStream.on("change", () => {
+            this.emit(listener);
+        });
     }
 
     //Queries for multiple results

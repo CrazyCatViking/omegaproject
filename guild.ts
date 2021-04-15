@@ -62,6 +62,20 @@ export class Guild {
         for (let i in enabledExtensions) {
             if (this.extensionManager.extensions[enabledExtensions[i]] !== undefined) this.extensionManager.enableExtension(enabledExtensions[i]);
         }
+
+        //Create DB Change Stream
+        this.databaseManager.registerChangeStream("guild", "settings");
+        this.databaseManager.on("guild", async () => {
+            let document = await this.databaseManager.fetchDocument("settings");
+            if (document) {
+                this.databaseObject = document;
+                this.commandManager.botCommand = document.botCommand;
+                let enabledExtensions = document.enabledExtensions;
+                for (let i in enabledExtensions) {
+                    if (this.extensionManager.extensions[enabledExtensions[i]] !== undefined) this.extensionManager.enableExtension(enabledExtensions[i]);
+                }
+            }
+        });
     }
 
     //Synchronizes database with the latest databaseObject
