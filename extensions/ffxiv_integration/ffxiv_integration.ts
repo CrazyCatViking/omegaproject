@@ -124,10 +124,10 @@ class FFXIV_Integration extends Extension {
             return;
         }
 
-        let chrProfile = getProfile.Character;
+        let chrProfile = getProfile;
 
         //Generate response graphics and send it
-        let profileEmbed = await generateProfileEmbed(chrProfile);
+        let profileEmbed = await generateProfileEmbed(chrProfile, this.xiv);
         message.channel.send(profileEmbed);
         message.channel.stopTyping();
     }
@@ -149,9 +149,9 @@ class FFXIV_Integration extends Extension {
                         message.channel.send(embed);
                     }
                 
-                    let chrProfile: any = getProfile.Character;
+                    let chrProfile: any = getProfile;
 
-                    let embedResponse = await generateProfileEmbed(chrProfile);
+                    let embedResponse = await generateProfileEmbed(chrProfile, this.xiv);
                     await message.channel.send(embedResponse);
                 }
             }
@@ -195,10 +195,10 @@ class FFXIV_Integration extends Extension {
                 return;
             }
             
-            let chrProfile: any = getProfile.Character;
+            let chrProfile: any = getProfile;
 
             //Generates graphivs and response and sends to user
-            let embedResponse = await generateProfileEmbed(chrProfile);
+            let embedResponse = await generateProfileEmbed(chrProfile, this.xiv);
             message.channel.send(embedResponse);
             message.channel.stopTyping();
         }
@@ -618,12 +618,12 @@ async function getXivCharacter(chrName: string, chrServer: string, xivapi: any) 
 
 //Methods for generating graphics
 //Creates custom image and returns it in an embed
-async function generateProfileEmbed(chrProfile: any) {
+async function generateProfileEmbed(chrProfile: any, xiv: any) {
         //Implement pretty pretty image system
         var canvas = createCanvas(1280, 873);
         var ctx = canvas.getContext('2d');
 
-        let img: Buffer = await getImage(chrProfile.Portrait);
+        let img: Buffer = await getImage(chrProfile.Character.Portrait);
         let profileImg = new Image();
         profileImg.src = img;
 
@@ -632,17 +632,25 @@ async function generateProfileEmbed(chrProfile: any) {
         ctx.drawImage(profileImg, 640, 0);
         ctx.drawImage(frame, 0, 0);
 
-        drawText(chrProfile.Name, 320, 100, ctx, {"font": '70px ' + "OPTIEngeEtienne", "alignment": "center"});
-        drawText(chrProfile.Title.Name, 320, 150, ctx, {"font": '40px ' + ffxivfont, "alignment": "center"});
+        drawText(chrProfile.Character.Name, 960, 723, ctx, {"font": '70px ' + "OPTIEngeEtienne", "alignment": "center"});
+        drawText(chrProfile.Character.Title.Name, 960, 773, ctx, {"font": '40px ' + ffxivfont, "alignment": "center"});
+        
+        //console.log(chrProfile);
+        let mimo = await getMimo(xiv);
+        let userMounts = chrProfile.Mounts.length;
+        let userMinions = chrProfile.Minions.length;
+        let prctMount = (Math.floor(userMounts/mimo.mounts*100));
+        let prctMinion = (Math.floor(userMinions/mimo.minions*100));
 
-        drawLvlText(chrProfile.ClassJobs, ctx);
+        drawMimoText({mountPrct: prctMount, minionPrct: prctMinion}, ctx);
+        drawLvlText(chrProfile.Character.ClassJobs, ctx);
 
         let finalImage: Buffer = canvas.toBuffer();
 
         let content = "";
         let options =  {
-            title: chrProfile.Name,
-            url: "https://na.finalfantasyxiv.com/lodestone/character/" + chrProfile.ID,
+            title: chrProfile.Character.Name,
+            url: "https://na.finalfantasyxiv.com/lodestone/character/" + chrProfile.Character.ID,
             files: {attachment: finalImage, name: "profile.png"},
             image: "attachment://profile.png"
         }
@@ -701,6 +709,33 @@ async function getImage(URL: string) {
         let request = await fetch.default(URL);
         let image = request.buffer();
         return image;
+}
+//GetMIMO
+async function getMimo(xiv: any) {
+    let mountTotal: number = 0;
+    let data: any = await xiv.data.list("Mount");
+    let pages = data.Pagination.PageTotal;
+    for (let i = 1; i <= pages; i++) {
+        let mounts = data.Results as any[];
+        let filteredMounts = mounts.filter(mount => mount.Name !== "");
+        mountTotal += filteredMounts.length;
+
+        data = await xiv.data.list("Mount", {page: data.Pagination.PageNext});
+    }
+
+    let minionTotal: number = 0;
+    data = await xiv.data.list("Companion");
+    pages = data.Pagination.PageTotal;
+    for (let i = 1; i <= pages; i++) {
+        let minions = data.Results as any[];
+        let filteredMinions = minions.filter(minion => minion.Name !== "");
+        minionTotal += filteredMinions.length;
+
+        data = await xiv.data.list("Companion", {page: data.Pagination.PageNext});
+    }
+    
+
+    return {mounts: mountTotal, minions: minionTotal};
 }
 //Draw Generic Text
 function drawText(text: string, x: number, y: number, ctx: any, options?: {[option: string]: any}) {
@@ -814,6 +849,14 @@ function drawLvlText(chrClassJobs: any, ctx: any) {
         }
 
 
+}
+//Draw Mount/Minion Text
+async function drawMimoText(mimoPrct: {mountPrct: number, minionPrct: number}, ctx: any) {
+    drawText("Mounts: ", 160, 100, ctx, {"font": '40px ' + ffxivfont, "alignment": "center"});
+    drawText("Minions: ", 480, 100, ctx, {"font": '40px ' + ffxivfont, "alignment": "center"});
+
+    drawText(`${mimoPrct.mountPrct}%`, 160, 190, ctx, {"font": '80px ' + ffxivfont, "alignment": "center"})
+    drawText(`${mimoPrct.minionPrct}%`, 480, 190, ctx, {"font": '80px ' + ffxivfont, "alignment": "center"})
 }
 //GEAR DRAWING METHODS
 //Draw Gear Icons
