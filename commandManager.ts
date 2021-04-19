@@ -42,7 +42,7 @@ export class CommandManager {
         let document = await this.databaseManager.fetchDocument("commandManager");
         if (document === undefined) {
             //If databaseObject is missing, initialize new one and send it to the database
-            this.databaseObject = {aliases: {}};
+            this.databaseObject = {aliases: {}, commands: {}};
             await this.databaseManager.sendDocument("commandManager", this.databaseObject);
         } else {
             //Set local databaseObject to the one fetched from the database
@@ -233,6 +233,7 @@ export class CommandManager {
     //Updates the databaseObject on the database with a new locally stored one
     updateDb() {
         this.databaseObject.aliases = this.aliases;
+        this.databaseObject.commands = this.commands;
         this.databaseManager.updateDocument("commandManager", this.databaseObject);
     }
 

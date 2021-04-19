@@ -70,7 +70,14 @@ export class Guild {
             if (document) {
                 this.databaseObject = document;
                 this.commandManager.botCommand = document.botCommand;
-                let enabledExtensions = document.enabledExtensions;
+                let enabledExtensions: string[] = document.enabledExtensions;
+
+                for (let extension in this.extensionManager.extensions) {
+                    if (this.extensionManager.extensions[extension].enabled && !enabledExtensions.includes(extension)) {
+                        this.extensionManager.disableExtension(extension);
+                    }
+                }
+
                 for (let i in enabledExtensions) {
                     if (this.extensionManager.extensions[enabledExtensions[i]] !== undefined) this.extensionManager.enableExtension(enabledExtensions[i]);
                 }

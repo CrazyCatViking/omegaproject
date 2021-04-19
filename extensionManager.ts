@@ -26,6 +26,7 @@ export class ExtensionManager {
     async init(guild: Guild) {
         //Load extensions
         await this.loadExtensions(guild);
+        this.commandManager.updateDb();
     }
 
     //Enables extension

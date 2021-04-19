@@ -31,6 +31,14 @@ export class PermissionManager {
             this.databaseObject = document;
         }
 
+        this.databaseManager.on('guild', async () => {
+            let newDocument = await this.databaseManager.fetchDocument("permissions");
+            this.databaseObject = newDocument;
+
+            this.userPermissions = this.databaseObject.userPermissions;
+            this.rolePermissions = this.databaseObject.rolePermissions;
+        });
+
         //Sets user and role permissions stored in the database object
         this.userPermissions = this.databaseObject.userPermissions;
         this.rolePermissions = this.databaseObject.rolePermissions;
