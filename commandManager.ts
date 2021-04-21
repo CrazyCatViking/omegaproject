@@ -65,6 +65,9 @@ export class CommandManager {
         let subCommand: string = args[1]; //Extension subCommand
         let commandArgs: string[] = args.slice(2); //Command arguments
 
+        //Check if namespace is defined
+        if (!namespace) return;
+
         //Handles the special case for use of the help command
         if (namespace === "help") {
             this.help(subCommand, commandArgs, message, permissionManager, extensionManager);
@@ -82,7 +85,7 @@ export class CommandManager {
             namespace = this.checkNamespace(namespace);
             if (this.commands[namespace] === undefined) return;
 
-            subCommand = this.checkSubCommand(namespace, subCommand);
+            if (subCommand) subCommand = this.checkSubCommand(namespace, subCommand);
             if (!this.commands[namespace].includes(subCommand)) return;
 
             commandArgs = args.slice(2);
