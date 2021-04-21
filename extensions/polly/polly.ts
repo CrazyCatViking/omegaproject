@@ -167,7 +167,7 @@ class Polly extends Extension {
     //Commands
     //Lists all stored and active polls
     list(args: string[], message: Message) {   
-        let list: string = "";
+        let list: string = "**These are the registered polls:**\n";
         for (var poll in this.polls) {
             list = poll + ": " + this.polls[poll].pollName; + "\n";
         }
