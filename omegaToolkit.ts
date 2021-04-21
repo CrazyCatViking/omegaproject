@@ -26,9 +26,11 @@ export function getStringArguments(rawString: string): string[] {
  
     for (let i in split) {
         if (!compundArg) {
-            if (split[i].startsWith('"')) {
+            if (split[i].startsWith('"') && !split[i].endsWith('"')) {
                 compundArg = true;
                 split[i] = split[i].replace(/"/, '');
+            } else {
+                split[i] = split[i].replace(/"/g, '');
             }
             args.push(split[i]);
             arrayPos = args.length - 1;
