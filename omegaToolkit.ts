@@ -23,7 +23,8 @@ export function getStringArguments(rawString: string): string[] {
     let arrayPos = 0;
     let compundArg: boolean = false;
     let args: string[] = [];
- 
+    
+    //Check manually for " to keep arg list ordered
     for (let i in split) {
         if (!compundArg) {
             if (split[i].startsWith('"') && !split[i].endsWith('"')) {
@@ -143,8 +144,8 @@ export function fetchChannel(channelId: string, guild: Guild): TextChannel | New
 }
 
 export function getCustomEmojiData(rawEmoji: string) {
-    let name = rawEmoji.match(/(?<=:)(.*?)(?=:)/);
-    let id = rawEmoji.match(/(?<=:)[0-9](.*?)(?=>)/);
+    let name = rawEmoji.match(/(?<=:)(.*?)(?=:)/); //Any statement encapsulated by ::
+    let id = rawEmoji.match(/(?<=:)[0-9](.*?)(?=>)/); //Any statement encapsulated by :number >
 
     if (!name || !id) return {name: undefined, id: undefined};
 
