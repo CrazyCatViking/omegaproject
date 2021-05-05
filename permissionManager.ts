@@ -6,8 +6,8 @@ import { GuildMember, Message } from "discord.js";
 import { DatabaseManager } from "./databaseManager";
 
 export class PermissionManager {
-    userPermissions: {[userId: string]: {[namespace: string]: string[]}}; //Stores what commands a spcific user has permissions to use
-    rolePermissions: {[roleId: string]: {[namespace: string]: string[]}}; //Stores what commands a specific role has permissions to use
+    userPermissions: {[userId: string]: {name: string, permissions: {[namespace: string]: string[]}}}; //Stores what commands a spcific user has permissions to use
+    rolePermissions: {[roleId: string]: {name: string, permissions: {[namespace: string]: string[]}}}; //Stores what commands a specific role has permissions to use
 
     databaseManager: DatabaseManager; //Guild specific database manager
     databaseObject: {[dataType: string]: {}}; //Database object for local database data
@@ -65,18 +65,23 @@ export class PermissionManager {
         */
 
         //Sets permissions for metioned users for the supplied namespace and commands
-        let users = message.mentions.users.array();
-        for (let i in users) {
-            let id = users[i].id;
+        let members: GuildMember[] = [];
+        if (message.mentions.members === null) return;
+        members = message.mentions.members.array();
 
-            if (this.userPermissions[id] === undefined) this.userPermissions[id] = {};
-            if (this.userPermissions[id][namespace] !== undefined) {
-                let currentSubCommands = this.userPermissions[id][namespace];
+        for (let i in members) {
+            let id = members[i].id;
+            let displayName = members[i].displayName;
+
+            if (this.userPermissions[id] === undefined) this.userPermissions[id] = {name: displayName, permissions: {}};
+
+            if (this.userPermissions[id].permissions[namespace] !== undefined) {
+                let currentSubCommands = this.userPermissions[id].permissions[namespace];
                 for (let i in subCommands) {
-                    if (!currentSubCommands.includes(subCommands[i])) this.userPermissions[id][namespace].push(subCommands[i]);
+                    if (!currentSubCommands.includes(subCommands[i])) this.userPermissions[id].permissions[namespace].push(subCommands[i]);
                 }
             } else {
-                this.userPermissions[id][namespace] = subCommands;
+                this.userPermissions[id].permissions[namespace] = subCommands;
             }
         }
 
@@ -84,15 +89,16 @@ export class PermissionManager {
         let roles = message.mentions.roles.array();
         for (let i in roles) {
             let id = roles[i].id;
+            let roleName = roles[i].name;
 
-            if (this.rolePermissions[id] === undefined) this.rolePermissions[id] = {};
-            if (this.rolePermissions[id][namespace] !== undefined) {
-                let currentSubCommands = this.rolePermissions[id][namespace];
+            if (this.rolePermissions[id] === undefined) this.rolePermissions[id] = {name: roleName, permissions: {}};
+            if (this.rolePermissions[id].permissions[namespace] !== undefined) {
+                let currentSubCommands = this.rolePermissions[id].permissions[namespace];
                 for (let i in subCommands) {
-                   if (!currentSubCommands.includes(subCommands[i])) this.rolePermissions[id][namespace].push(subCommands[i]);
+                   if (!currentSubCommands.includes(subCommands[i])) this.rolePermissions[id].permissions[namespace].push(subCommands[i]);
                 }
             } else {
-                this.rolePermissions[id][namespace] = subCommands;
+                this.rolePermissions[id].permissions[namespace] = subCommands;
             }
 
         }
@@ -111,25 +117,29 @@ export class PermissionManager {
         */
 
         //Removes permissions for metioned users for the supplied namespace and commands
-        let users = message.mentions.users.array();
-        for (let i in users) {
-            let id = users[i].id;
+        let members: GuildMember[];
+        if (message.mentions.members === null) return;
+        members = message.mentions.members.array();
+
+        for (let i in members) {
+            let id = members[i].id;
+            let displayName = members[i].displayName;
 
             let removedSubCommands: string[] = [];
-            if (this.userPermissions[id] === undefined) this.userPermissions[id] = {};
-            if (this.userPermissions[id][namespace] !== undefined) {
-                let currentSubCommands = this.userPermissions[id][namespace];
+            if (this.userPermissions[id] === undefined) this.userPermissions[id] = {name: displayName, permissions: {}};
+            if (this.userPermissions[id].permissions[namespace] !== undefined) {
+                let currentSubCommands = this.userPermissions[id].permissions[namespace];
 
                 for (let i in subCommands) {
                    if (currentSubCommands.includes(subCommands[i])) removedSubCommands.push(subCommands[i]);
                 }
 
                 for (let i in removedSubCommands) {
-                    let arrayPos = this.userPermissions[id][namespace].findIndex(permission => permission  === removedSubCommands[i]);
-                    this.userPermissions[id][namespace].splice(arrayPos, 1);
+                    let arrayPos = this.userPermissions[id].permissions[namespace].findIndex(permission => permission  === removedSubCommands[i]);
+                    this.userPermissions[id].permissions[namespace].splice(arrayPos, 1);
                 }
 
-                if (this.userPermissions[id][namespace].length === 0) delete this.userPermissions[id][namespace];
+                if (this.userPermissions[id].permissions[namespace].length === 0) delete this.userPermissions[id].permissions[namespace];
             } 
         }
 
@@ -137,22 +147,23 @@ export class PermissionManager {
         let roles = message.mentions.roles.array();
         for (let i in roles) {
             let id = roles[i].id;
+            let roleName = roles[i].name;
 
             let removedSubCommands: string[] = [];
-            if (this.rolePermissions[id] === undefined) this.rolePermissions[id] = {};
-            if (this.rolePermissions[id][namespace] !== undefined) {
-                let currentSubCommands = this.rolePermissions[id][namespace];
+            if (this.rolePermissions[id] === undefined) this.rolePermissions[id] = {name: roleName, permissions: {}};
+            if (this.rolePermissions[id].permissions[namespace] !== undefined) {
+                let currentSubCommands = this.rolePermissions[id].permissions[namespace];
 
                 for (let i in subCommands) {
                    if (currentSubCommands.includes(subCommands[i])) removedSubCommands.push(subCommands[i]);
                 }  
 
                 for (let i in removedSubCommands) {
-                    let arrayPos = this.rolePermissions[id][namespace].findIndex(permission => permission === removedSubCommands[i]);
-                    this.rolePermissions[id][namespace].splice(arrayPos, 1);
+                    let arrayPos = this.rolePermissions[id].permissions[namespace].findIndex(permission => permission === removedSubCommands[i]);
+                    this.rolePermissions[id].permissions[namespace].splice(arrayPos, 1);
                 }
 
-                if (this.rolePermissions[id][namespace].length === 0) delete this.rolePermissions[id][namespace];
+                if (this.rolePermissions[id].permissions[namespace].length === 0) delete this.rolePermissions[id].permissions[namespace];
             }
         }
 
@@ -162,8 +173,8 @@ export class PermissionManager {
     //Checks if a user has the correct permissions
     private resolveUserPermission(namespace: string, subCommand: string, guildMember: GuildMember): boolean {
         if (this.userPermissions[guildMember.id] === undefined) return false;
-        if (this.userPermissions[guildMember.id][namespace] === undefined) return false;
-        if (this.userPermissions[guildMember.id][namespace].includes(subCommand)) return true;
+        if (this.userPermissions[guildMember.id].permissions[namespace] === undefined) return false;
+        if (this.userPermissions[guildMember.id].permissions[namespace].includes(subCommand)) return true;
         return false;
     }
 
@@ -172,8 +183,8 @@ export class PermissionManager {
         let roles = guildMember.roles.cache.array();
         for (let i in roles) {
             if (this.rolePermissions[roles[i].id] !== undefined) {
-                if (this.rolePermissions[roles[i].id][namespace] !== undefined) {
-                    if (this.rolePermissions[roles[i].id][namespace].includes(subCommand)) return true;
+                if (this.rolePermissions[roles[i].id].permissions[namespace] !== undefined) {
+                    if (this.rolePermissions[roles[i].id].permissions[namespace].includes(subCommand)) return true;
                 }
             }
         }
