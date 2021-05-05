@@ -143,29 +143,10 @@ export function fetchChannel(channelId: string, guild: Guild): TextChannel | New
 }
 
 export function getCustomEmojiData(rawEmoji: string) {
-    let name = "";
-    let id = "";
+    let name = rawEmoji.match(/(?<=:)(.*?)(?=:)/);
+    let id = rawEmoji.match(/(?<=:)[0-9](.*?)(?=>)/);
 
-    let gotName = false;
-    let gettingName = false;
-    for (let i = 0; i < rawEmoji.length; i++) {
-        let chr = rawEmoji.charAt(i);
+    if (!name || !id) return {name: undefined, id: undefined};
 
-        if (!gotName) {
-            if (chr === ":" && gettingName === false) {
-                gettingName = true;
-            } else if (chr === ":" && gettingName === true) {
-                gettingName = false;
-                gotName = true;
-            } else if (chr !== ":" && chr !== "<" && chr !== ">") {
-                name = name + chr;
-            }
-        } else {
-            if (chr !== ":" && chr !== "<" && chr !== ">") {
-                id = id + chr;
-            }
-        }
-    }
-
-    return {name: name, id: id};
+    return {name: name[0], id: id[0]};
 }
