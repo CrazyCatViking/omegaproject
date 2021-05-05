@@ -359,11 +359,20 @@ class FFXIV_Integration extends Extension {
 
             if (!this.messageTracker.isTracked(messageId)) return;
 
-            let emojiData = getCustomEmojiData(emoji);
-
             let reactions = this.messageTracker.messages[messageId].reactions.cache.array();
-            let thisReaction = reactions.find(reaction => reaction.emoji.id === emojiData.id);
-            if (thisReaction === undefined) return;
+            let thisReaction: MessageReaction | undefined = undefined;
+
+            if (emoji.includes("<" || ">")) {
+                let emojiData = getCustomEmojiData(emoji);
+                thisReaction = reactions.find(reaction => reaction.emoji.id === emojiData.id);
+            } else {
+                thisReaction = reactions.find(reaction => reaction.emoji.name === emoji);
+            }
+
+            if (thisReaction === undefined) {
+                message.channel.stopTyping();
+                return;
+            }
             
             let users = thisReaction.users.cache.array();
             for (let i in users) {
