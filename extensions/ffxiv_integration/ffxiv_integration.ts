@@ -645,11 +645,16 @@ async function generateProfileEmbed(chrProfile: any, xiv: any) {
         drawText(chrProfile.Character.Title.Name, 960, 773, ctx, {"font": '40px ' + ffxivfont, "alignment": "center"});
         
         //console.log(chrProfile);
+        let prctMount = 0;
+        let prctMinion = 0;
         let mimo = await getMimo(xiv);
-        let userMounts = chrProfile.Mounts.length;
-        let userMinions = chrProfile.Minions.length;
-        let prctMount = (Math.floor(userMounts/mimo.mounts*100));
-        let prctMinion = (Math.floor(userMinions/mimo.minions*100));
+        
+        if (chrProfile.Mounts !== undefined && chrProfile.Mounts !== null) {
+            let userMounts = chrProfile.Mounts.length;
+            let userMinions = chrProfile.Minions.length;
+            prctMount = (Math.floor(userMounts/mimo.mounts*100));
+            prctMinion = (Math.floor(userMinions/mimo.minions*100));
+        }
 
         drawMimoText({mountPrct: prctMount, minionPrct: prctMinion}, ctx);
         drawLvlText(chrProfile.Character.ClassJobs, ctx);
