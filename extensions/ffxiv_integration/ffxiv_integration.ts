@@ -651,8 +651,11 @@ async function generateProfileEmbed(chrProfile: any, xiv: any) {
         
         if (chrProfile.Mounts !== undefined && chrProfile.Mounts !== null) {
             let userMounts = chrProfile.Mounts.length;
-            let userMinions = chrProfile.Minions.length;
             prctMount = (Math.floor(userMounts/mimo.mounts*100));
+        }
+
+        if (chrProfile.Minions !== undefined && chrProfile.Minions !== null) {
+            let userMinions = chrProfile.Minions.length;
             prctMinion = (Math.floor(userMinions/mimo.minions*100));
         }
 
