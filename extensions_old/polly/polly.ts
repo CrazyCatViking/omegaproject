@@ -10,7 +10,7 @@
 
 import { Guild, User, PartialUser, Message, MessageReaction, TextChannel } from "discord.js";
 import { checkFlags, createEmbed } from "../../omegaToolkit";
-import { Extension } from "../../extension";
+import { Extension } from "../../extension_old";
 
 //Emojis used for voting in polls
 const numberEmoji: string[] = ["1⃣", "2⃣", "3⃣","4⃣","5⃣","6⃣","7⃣","8⃣","9⃣"];
