@@ -1,4 +1,4 @@
-import { Client, Guild, IntentsString, Message} from 'discord.js';
+import { Client, CommandInteraction, Guild, IntentsString, Interaction, Message} from 'discord.js';
 import { GuildManager } from './guildManager';
 
 const INTENTS: IntentsString[] = [
@@ -23,14 +23,23 @@ discord.login(process.env.DISCORD_TOKEN);
 
 discord.once('ready', () => {
     discord.guilds.cache.forEach((guild: Guild) => {
-        const newGuild = new GuildManager(Number(guild.id));
+        const newGuild = new GuildManager(guild.id);
         connectedGuilds.set(guild.id, newGuild);
     });
     console.log('Ready');
 });
 
 discord.on('guildCreate', (guild) => {
-    const newGuild = new GuildManager(Number(guild.id));
+    const newGuild = new GuildManager(guild.id);
     connectedGuilds.set(guild.id, newGuild);
     console.log(connectedGuilds);
 });
+
+discord.on('interactionCreate', (interaction) => {
+    const guildId = interaction.guildId;
+    if (guildId === null) return;
+
+    if (interaction.isCommand()) {
+        connectedGuilds.get(guildId)?.commandInteraction(interaction);
+    }
+})

@@ -1,11 +1,11 @@
 import Hashids from 'hashids';
 
-const hashids = new Hashids('thegreatbigtreeburntandfell');
+const guildHashIds = new Hashids('thegreatbigtreeburntandfell');
 
-export const encode = (id: number) => {
-    return hashids.encode(id);
+export const encode = (id: string) => {
+    return guildHashIds.encode(BigInt(id));
 };
 
 export const decode = (hashid: string) => {
-    return hashids.decode(hashid);
+    return guildHashIds.decode(hashid);
 }

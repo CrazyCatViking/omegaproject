@@ -4,6 +4,7 @@ import { IDatabaseContextKey, IExtensionCommand, IExtensionEvent } from "./utili
 export class BaseExtension {
     dbContext?: DbContext;
     enabled: boolean = true;
+    name: string = "baseExtension";
 
     constructor(databaseContextKey: IDatabaseContextKey | null) {
         if (!!databaseContextKey) this.dbContext = new DbContext(databaseContextKey);
