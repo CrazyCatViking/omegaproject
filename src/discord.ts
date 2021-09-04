@@ -1,4 +1,4 @@
-import { Client, CommandInteraction, Guild, IntentsString, Interaction, Message} from 'discord.js';
+import { Client, Guild, IntentsString} from 'discord.js';
 import { GuildManager } from './guildManager';
 
 const INTENTS: IntentsString[] = [
@@ -34,12 +34,3 @@ discord.on('guildCreate', (guild) => {
     connectedGuilds.set(guild.id, newGuild);
     console.log(connectedGuilds);
 });
-
-discord.on('interactionCreate', (interaction) => {
-    const guildId = interaction.guildId;
-    if (guildId === null) return;
-
-    if (interaction.isCommand()) {
-        connectedGuilds.get(guildId)?.commandInteraction(interaction);
-    }
-})

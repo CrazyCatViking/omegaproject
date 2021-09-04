@@ -1,4 +1,4 @@
-import { CommandInteraction } from "discord.js";
+import { CommandInteraction, ContextMenuInteraction } from "discord.js";
 import { BaseManager } from "./baseManager";
 import { CommandManager } from "./commandManager";
 import { ExtensionManager } from "./extensionManager";
@@ -23,7 +23,7 @@ export class GuildManager extends BaseManager {
         this.commandManager.registerCommandResponse(this.extensionManager.loadedExtensions);
     }
 
-    public commandInteraction(interaction: CommandInteraction) {
-        this.commandManager.commandInteraction(interaction);
+    public interaction(interaction: CommandInteraction | ContextMenuInteraction) {
+        this.commandManager.interaction(interaction);
     }
 }

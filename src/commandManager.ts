@@ -1,13 +1,13 @@
 import { SlashCommandBuilder } from '@discordjs/builders';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
-import { CommandInteraction } from 'discord.js';
+import { CommandInteraction, ContextMenuInteraction } from 'discord.js';
 
 import { BaseExtension } from "./baseExtension";
 import { BaseManager } from "./baseManager";
 import { buildSlashCommand } from "./helpers/slashCommandBuilder";
 import { decode } from './utility/hashids';
-import { IExtensionCommand } from './utility/types';
+import { IApplicationContextCommand, IExtensionCommand, IExtensionContextCommand, InteractionCommandType } from './utility/types';
 
 export class CommandManager extends BaseManager {
     constructor(hashGuildId: string) {
@@ -15,11 +15,23 @@ export class CommandManager extends BaseManager {
     }
 
     public registerCommands(extensions: BaseExtension[]): void {
-        const commands: SlashCommandBuilder[] = [];
+        const commandBuilders: SlashCommandBuilder[] = [];
+        const contextCommands: IApplicationContextCommand[]  = [];
 
         extensions.forEach((extension) => {
-           commands.push(...buildSlashCommand(extension.commands()));
+           commandBuilders.push(...buildSlashCommand(extension.commands()));
+           contextCommands.push(...extension.contextCommands().map(command => {
+               return {
+                   name: command.name,
+                   type: command.type,
+               }
+           }));
         });
+
+        const commands: any[] = [
+            ...commandBuilders.map(command => command.toJSON()),
+            ...contextCommands,
+        ];
 
         const rest = new REST({version: '9'}).setToken(process.env.DISCORD_TOKEN as string);
 
@@ -27,7 +39,7 @@ export class CommandManager extends BaseManager {
             try {console.log('Started refreshing application (/) commands.')
                 await rest.put(
                     Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID as string, String(decode(this.hashGuildId))),
-                    { body: commands.map(command => command.toJSON()) }
+                    { body: commands }
                 )
 
                 console.log('Successfully reloaded application (/) commands.');
@@ -39,14 +51,51 @@ export class CommandManager extends BaseManager {
 
     public registerCommandResponse(extensions: BaseExtension[]): void {
         const commands: IExtensionCommand[] = [];
-        extensions.forEach(extension => commands.push(...extension.commands()));
+        const contextCommands: IExtensionContextCommand[] = [];
+        extensions.forEach(extension => {
+            commands.push(...extension.commands());
+            contextCommands.push(...extension.contextCommands());
+        });
 
         commands.forEach((command) => {
-            this.on(command.name, (interaction) => command.method(interaction));
+            if (!(!!command.subCommands || !!command.subCommandGroups) && !!(command.method)) {
+                const method = command.method as (interaction: CommandInteraction) => void;
+                this.on(command.name, (interaction) => method(interaction));
+            }
+
+            if (!!command.subCommands) {
+                command.subCommands.forEach((subCommand) => {
+                    this.on(`${command.name}/${subCommand.name}`, (interaction) => subCommand.method(interaction));
+                });
+            }
+
+            if (!!command.subCommandGroups) {
+                command.subCommandGroups.forEach((group) => {
+                    group.subCommands.forEach((subCommand) => {
+                        this.on(`${command.name}/${group.name}/${subCommand.name}`, (interaction) => subCommand.method(interaction));
+                    });
+                });
+            }
         });
+
+        contextCommands.forEach((command) => {
+            this.on(command.name, (interaction) => command.method(interaction));
+        })
     }
 
-    public commandInteraction(interaction: CommandInteraction) {
+    public interaction(interaction: CommandInteraction | ContextMenuInteraction) {
+        const options = interaction.options.data[0];
+        if (!!options && options.type === InteractionCommandType.SubCommandGroup) {
+            const groupOptions = options.options ? options.options[0] : undefined;
+            if (!!groupOptions) this.emit(`${interaction.commandName}/${options.name}/${groupOptions.name}`, interaction);
+            return;
+        }
+
+        if (!!options && options.type === InteractionCommandType.SubCommand) {
+            this.emit(`${interaction.commandName}/${options.name}`, interaction);
+            return;
+        }
+        
         this.emit(interaction.commandName, interaction);
     }
 }

@@ -9,10 +9,6 @@ export const buildSlashCommand = (extensionCommands: IExtensionCommand[]) => {
         commandBuilder.setName(command.name)
                       .setDescription(command.description)
                       .setDefaultPermission(true);
-        
-        if (!!command.options) {
-            addOptions(commandBuilder, command.options);
-        } 
 
         if (!!command.subCommands) {
             addSubCommands(commandBuilder, command.subCommands);
@@ -22,9 +18,12 @@ export const buildSlashCommand = (extensionCommands: IExtensionCommand[]) => {
             addSubCommandGroups(commandBuilder, command.subCommandGroups);
         }
 
+        if (!!command.options && !(!!command.subCommands || !!command.subCommandGroups)) {
+            addOptions(commandBuilder, command.options);
+        } 
+
         commands.push(commandBuilder);
     });
-
     return commands;
 }
 

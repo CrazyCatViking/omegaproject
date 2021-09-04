@@ -1,6 +1,6 @@
 import { BaseExtension } from "./baseExtension";
 import { BaseManager } from "./baseManager";
-import { TestExtension } from "./extensions/testExtension";
+import { TestExtension } from "./extensions/testExtension/testExtension";
 
 export class ExtensionManager extends BaseManager {
     loadedExtensions: BaseExtension[];
