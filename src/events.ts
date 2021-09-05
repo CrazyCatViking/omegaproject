@@ -35,7 +35,6 @@ export const events = (client: Client, connectedGuilds: Map<string, GuildManager
 
         const guildId = message.guildId;
         if (!!guildId && connectedGuilds.has(guildId)) {
-            console.log("Event fireing");
             connectedGuilds.get(guildId)?.event(DiscordEventTypes.MessageCreate, eventPackage); 
         }
     });
