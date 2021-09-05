@@ -1,5 +1,5 @@
 import { ContextMenuInteraction } from "discord.js";
-import { BaseContextCommand } from "../../../baseContextCommand";
+import { BaseContextCommand } from "../../../baseComponents/baseContextCommand";
 import { ApplicationCommandType, IExtensionContextCommand } from "../../../utility/types";
 
 export class TestContextCommand extends BaseContextCommand {

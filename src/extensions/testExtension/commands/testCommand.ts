@@ -1,5 +1,5 @@
 import { CommandInteraction } from "discord.js";
-import { BaseCommand } from "../../../baseCommand";
+import { BaseCommand } from "../../../baseComponents/baseCommand";
 import { IExtensionCommand } from "../../../utility/types";
 
 export class TestCommand extends BaseCommand {

@@ -1,4 +1,4 @@
-import { IExtensionContextCommand, IExtensionState } from "./utility/types";
+import { IExtensionContextCommand, IExtensionState } from "../utility/types";
 
 export class BaseContextCommand {
     $state?: IExtensionState;

@@ -3,11 +3,11 @@ import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import { CommandInteraction, ContextMenuInteraction } from 'discord.js';
 
-import { BaseExtension } from "./baseExtension";
-import { BaseManager } from "./baseManager";
+import { BaseExtension } from "./baseComponents/baseExtension";
+import { BaseManager } from "./baseComponents/baseManager";
 import { buildSlashCommand } from "./helpers/slashCommandBuilder";
 import { decode } from './utility/hashids';
-import { IApplicationContextCommand, IExtensionCommand, IExtensionContextCommand, InteractionCommandType } from './utility/types';
+import { ApplicationCommandType, IApplicationContextCommand, IExtensionCommand, IExtensionContextCommand, InteractionCommandType } from './utility/types';
 
 export class CommandManager extends BaseManager {
     constructor(hashGuildId: string) {
@@ -79,23 +79,36 @@ export class CommandManager extends BaseManager {
         });
 
         contextCommands.forEach((command) => {
-            this.on(command.name, (interaction) => command.method(interaction));
+            this.on(`contextCommand/${command.type}/${command.name}`, (interaction) => command.method(interaction));
         })
     }
 
     public interaction(interaction: CommandInteraction | ContextMenuInteraction) {
         const options = interaction.options.data[0];
-        if (!!options && options.type === InteractionCommandType.SubCommandGroup) {
-            const groupOptions = options.options ? options.options[0] : undefined;
-            if (!!groupOptions) this.emit(`${interaction.commandName}/${options.name}/${groupOptions.name}`, interaction);
-            return;
+        
+        if (interaction.isCommand()) {
+            if (!!options && options.type === InteractionCommandType.SubCommandGroup) {
+                const groupOptions = options.options ? options.options[0] : undefined;
+                if (!!groupOptions) this.emit(`${interaction.commandName}/${options.name}/${groupOptions.name}`, interaction);
+                return;
+            }
+    
+            if (!!options && options.type === InteractionCommandType.SubCommand) {
+                this.emit(`${interaction.commandName}/${options.name}`, interaction);
+                return;
+            }
+
+            this.emit(interaction.commandName, interaction);
         }
 
-        if (!!options && options.type === InteractionCommandType.SubCommand) {
-            this.emit(`${interaction.commandName}/${options.name}`, interaction);
-            return;
+        if (interaction.isContextMenu()) {
+            if (!!options && options.type as any === InteractionCommandType.MessageContextCommand) {
+                this.emit(`contextCommand/${ApplicationCommandType.MessageCommand}/${interaction.commandName}`, interaction);
+            }
+
+            if (!!options && options.type as any === InteractionCommandType.UserContextCommand) {
+                this.emit(`contextCommand/${ApplicationCommandType.UserCommand}/${interaction.commandName}`, interaction);
+            }
         }
-        
-        this.emit(interaction.commandName, interaction);
     }
 }

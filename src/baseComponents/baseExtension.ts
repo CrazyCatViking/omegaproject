@@ -1,6 +1,6 @@
 import { BaseCommand } from "./baseCommand";
-import { DbContext } from "./dbManager";
-import { IDatabaseContextKey, IExtensionCommand, IExtensionContextCommand, IExtensionEvent, IExtensionState } from "./utility/types";
+import { DbContext } from "../dbManager";
+import { IDatabaseContextKey, IExtensionCommand, IExtensionContextCommand, IExtensionEvent, IExtensionState } from "../utility/types";
 
 export class BaseExtension {
     dbContext?: DbContext;

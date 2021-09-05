@@ -1,5 +1,5 @@
 import { CommandInteraction, ContextMenuInteraction } from "discord.js";
-import { IExtensionCommand, IExtensionCommandOption, IExtensionState, IExtensionSubCommand } from "./utility/types";
+import { IExtensionCommand, IExtensionCommandOption, IExtensionState, IExtensionSubCommand } from "../utility/types";
 
 export class BaseCommand {
     $state?: IExtensionState;

@@ -1,8 +1,9 @@
 import { CommandInteraction, ContextMenuInteraction } from "discord.js";
-import { BaseManager } from "./baseManager";
+import { BaseManager } from "./baseComponents/baseManager";
 import { CommandManager } from "./commandManager";
 import { ExtensionManager } from "./extensionManager";
 import { encode } from './utility/hashids';
+import { DiscordEventTypes, IEventPackage } from "./utility/types";
 
 export class GuildManager extends BaseManager {
     commandManager: CommandManager;
@@ -25,5 +26,9 @@ export class GuildManager extends BaseManager {
 
     public interaction(interaction: CommandInteraction | ContextMenuInteraction) {
         this.commandManager.interaction(interaction);
+    }
+
+    public event(eventType: DiscordEventTypes, eventPackage: IEventPackage) {
+
     }
 }

@@ -1,4 +1,4 @@
-import { Application, CommandInteraction, ContextMenuInteraction } from "discord.js";
+import { Application, CommandInteraction, ContextMenuInteraction, Message, MessageReaction, PartialMessage, PartialMessageReaction, PartialUser, User } from "discord.js";
 
 export enum OptionTypes {
     String = "String",
@@ -20,6 +20,23 @@ export enum ApplicationCommandType {
 export enum InteractionCommandType {
     SubCommandGroup = 'SUB_COMMAND_GROUP',
     SubCommand = 'SUB_COMMAND',
+    UserContextCommand = 'USER',
+    MessageContextCommand = '_MESSAGE',
+}
+
+export enum DiscordEventTypes {
+    MessageCreate = "messageCreate",
+    MessageDelete = "messageDelete",
+    MessageUpdate = "messageUpdate",
+    MessageReactionAdd = "messageReactionAdd",
+    MessageReactionRemove = "messageReactionRemove",
+}
+
+export interface IEventPackage {
+    messages?: (Message | PartialMessage)[];
+    reactions?: (MessageReaction | PartialMessageReaction)[];
+    users?: (User | PartialUser)[];
+    anyObjects?: any[];
 }
 
 export interface IDatabaseContextKey {
@@ -63,8 +80,8 @@ export interface IExtensionCommandOptionChoice {
 }
 
 export interface IExtensionEvent {
-    key: string;
-    method: Function;
+    event: DiscordEventTypes;
+    method: (eventPackage: IEventPackage) => void;
 };
 
 export interface IExtensionContextCommand {

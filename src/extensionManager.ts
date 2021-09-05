@@ -1,5 +1,5 @@
-import { BaseExtension } from "./baseExtension";
-import { BaseManager } from "./baseManager";
+import { BaseExtension } from "./baseComponents/baseExtension";
+import { BaseManager } from "./baseComponents/baseManager";
 import { TestExtension } from "./extensions/testExtension/testExtension";
 
 export class ExtensionManager extends BaseManager {

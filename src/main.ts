@@ -1,4 +1,5 @@
 import { discord, connectedGuilds } from './discord';
+import { registerDiscordEvents } from './helpers/events';
 
 const guildList = connectedGuilds;
 const client = discord;
@@ -11,3 +12,5 @@ client.on('interactionCreate', (interaction) => {
         guildList.get(guildId)?.interaction(interaction);
     };
 });
+
+registerDiscordEvents(client, guildList);

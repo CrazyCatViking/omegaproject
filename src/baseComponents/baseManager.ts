@@ -1,6 +1,6 @@
 import { EventEmitter } from 'stream';
-import { DbContext } from './dbManager';
-import { IDatabaseContextKey } from './utility/types';
+import { DbContext } from '../dbManager';
+import { IDatabaseContextKey } from '../utility/types';
 
 export class BaseManager extends EventEmitter {
     dbContext?: DbContext;

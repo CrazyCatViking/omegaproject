@@ -1,9 +1,9 @@
-import { CommandInteraction, ContextMenuInteraction } from "discord.js";
-import { BaseExtension } from "../../baseExtension";
-import { ApplicationCommandType, IExtensionCommand, IExtensionContextCommand, OptionTypes } from "../../utility/types";
+import { BaseExtension } from "../../baseComponents/baseExtension";
+import { IExtensionCommand, IExtensionContextCommand, IExtensionEvent, OptionTypes } from "../../utility/types";
 
 import { TestCommand } from "./commands/testCommand";
 import { TestContextCommand } from "./contextCommands/testContextCommand";
+import { TestEvent } from "./events/testEvent";
 
 export class TestExtension extends BaseExtension {
     name: string = "testExtension";
@@ -25,6 +25,14 @@ export class TestExtension extends BaseExtension {
 
         return [
             testContextCommand.command,
+        ];
+    }
+
+    events(): IExtensionEvent[] {
+        const testEvent = new TestEvent(this.$state);
+
+        return [
+            testEvent.eventHandler,
         ];
     }
 }
