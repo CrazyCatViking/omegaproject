@@ -96,5 +96,9 @@ export interface IApplicationContextCommand {
 }
 
 export interface IExtensionState {
-    
+    sessionState?: ISessionState; // Only stored for the current local session
+    sharedState?: ISharedState; // Local shared state should always be reflected on that database
 }
+
+export interface ISessionState {}
+export interface ISharedState {}
