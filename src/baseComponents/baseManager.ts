@@ -6,7 +6,7 @@ export class BaseManager extends EventEmitter {
     dbContext?: DbContext;
     hashGuildId: string;
 
-    constructor(databseContextKey: IDatabaseContextKey | null, hashGuildId: string) {
+    constructor(hashGuildId: string, databseContextKey?: IDatabaseContextKey) {
         super();
         if (!!databseContextKey) this.dbContext = new DbContext(databseContextKey);
         this.hashGuildId = hashGuildId;

@@ -1,16 +1,8 @@
-import { discord, connectedGuilds } from './discord';
-import { registerDiscordEvents } from './helpers/events';
+import { discord } from './discord';
+import { events } from './events';
+import { GuildManager } from './guildManager';
 
-const guildList = connectedGuilds;
+const connectedGuilds: Map<string, GuildManager> = new Map();
 const client = discord;
 
-client.on('interactionCreate', (interaction) => {
-    const guildId = interaction.guildId;
-    if (guildId === null) return;
-
-    if (interaction.isCommand() || interaction.isContextMenu()) {
-        guildList.get(guildId)?.interaction(interaction);
-    };
-});
-
-registerDiscordEvents(client, guildList);
+events(client, connectedGuilds);

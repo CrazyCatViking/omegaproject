@@ -1,5 +1,4 @@
-import { Client, Guild, IntentsString} from 'discord.js';
-import { GuildManager } from './guildManager';
+import { Client, IntentsString} from 'discord.js';
 
 const INTENTS: IntentsString[] = [
     "GUILDS",
@@ -16,21 +15,6 @@ const INTENTS: IntentsString[] = [
     "DIRECT_MESSAGE_TYPING"
 ]
 
-export const connectedGuilds: Map<string, GuildManager> = new Map();
 export const discord = new Client({intents: INTENTS});
 
 discord.login(process.env.DISCORD_TOKEN);
-
-discord.once('ready', () => {
-    discord.guilds.cache.forEach((guild: Guild) => {
-        const newGuild = new GuildManager(guild.id);
-        connectedGuilds.set(guild.id, newGuild);
-    });
-    console.log('Ready');
-});
-
-discord.on('guildCreate', (guild) => {
-    const newGuild = new GuildManager(guild.id);
-    connectedGuilds.set(guild.id, newGuild);
-    console.log(connectedGuilds);
-});

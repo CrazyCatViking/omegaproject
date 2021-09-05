@@ -11,7 +11,7 @@ import { ApplicationCommandType, IApplicationContextCommand, IExtensionCommand, 
 
 export class CommandManager extends BaseManager {
     constructor(hashGuildId: string) {
-        super({ collectionKey: hashGuildId, documentKey: 'commands' }, hashGuildId);
+        super(hashGuildId, { collectionKey: hashGuildId, documentKey: 'commands' });
     }
 
     public registerCommands(extensions: BaseExtension[]): void {

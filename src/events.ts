@@ -1,8 +1,31 @@
-import { Client, Message, MessageReaction, PartialMessage, PartialMessageReaction, PartialUser, User } from "discord.js";
-import { GuildManager } from "../guildManager";
-import { DiscordEventTypes, IEventPackage } from "../utility/types";
+import { Client, Guild, Message, MessageReaction, PartialMessage, PartialMessageReaction, PartialUser, User } from "discord.js";
+import { GuildManager } from "./guildManager";
+import { DiscordEventTypes, IEventPackage } from "./utility/types";
 
-export const registerDiscordEvents = (client: Client, connectedGuilds: Map<string, GuildManager>) => {
+export const events = (client: Client, connectedGuilds: Map<string, GuildManager>) => {
+    client.once('ready', () => {
+        client.guilds.cache.forEach((guild: Guild) => {
+            const newGuild = new GuildManager(guild.id);
+            connectedGuilds.set(guild.id, newGuild);
+        });
+        console.log('Ready');
+    });
+    
+    client.on('guildCreate', (guild) => {
+        const newGuild = new GuildManager(guild.id);
+        connectedGuilds.set(guild.id, newGuild);
+        console.log(connectedGuilds);
+    });
+
+    client.on('interactionCreate', (interaction) => {
+        const guildId = interaction.guildId;
+        if (guildId === null) return;
+    
+        if (interaction.isCommand() || interaction.isContextMenu()) {
+            connectedGuilds.get(guildId)?.interaction(interaction);
+        };
+    });
+
     client.on('messageCreate', (message: Message) => {
         const eventPackage: IEventPackage = {
             messages: [
@@ -12,6 +35,7 @@ export const registerDiscordEvents = (client: Client, connectedGuilds: Map<strin
 
         const guildId = message.guildId;
         if (!!guildId && connectedGuilds.has(guildId)) {
+            console.log("Event fireing");
             connectedGuilds.get(guildId)?.event(DiscordEventTypes.MessageCreate, eventPackage); 
         }
     });
