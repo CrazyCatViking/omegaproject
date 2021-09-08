@@ -100,5 +100,20 @@ export interface IExtensionState {
     sharedState?: ISharedState; // Local shared state should always be reflected on that database
 }
 
+export interface IManagerState {
+    sessionState?: ISessionState;
+    sharedState?: ISharedState;
+}
+
+export interface IQueryObject {
+    query: object;
+    data?: object;
+}
+
+export interface IQueryResult {
+    result: boolean;
+    data?: object;
+}
+
 export interface ISessionState {}
 export interface ISharedState {}

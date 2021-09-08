@@ -1,8 +1,8 @@
 import { BaseCommand } from "./baseCommand";
-import { DbContext } from "../dbManager";
+import { DbContext } from "../dbContext";
 import { IDatabaseContextKey, IExtensionCommand, IExtensionContextCommand, IExtensionEvent, IExtensionState } from "../utility/types";
 
-export class BaseExtension {
+export abstract class BaseExtension {
     dbContext?: DbContext;
     enabled: boolean = true;
     name: string = "baseExtension";

@@ -1,6 +1,6 @@
 import { IExtensionContextCommand, IExtensionState } from "../utility/types";
 
-export class BaseContextCommand {
+export abstract class BaseContextCommand {
     $state?: IExtensionState;
 
     constructor (state?: IExtensionState) {
