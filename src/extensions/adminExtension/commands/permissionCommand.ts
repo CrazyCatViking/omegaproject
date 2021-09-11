@@ -1,8 +1,9 @@
-import { CommandInteraction, Guild } from "discord.js";
+import { ApplicationCommandPermissions, CommandInteraction, Guild } from "discord.js";
 
 import { BaseCommand } from "../../../baseComponents/baseCommand";
 import { getCommandChoices } from "../../../utility/shared";
 import { IExtensionCommand, IExtensionCommandOption, OptionTypes } from "../../../utility/types";
+import { parseDiscordRoles, parseDiscordUsers } from "../../../helpers/parseDiscordStrings";
 
 export class PermissionCommand extends BaseCommand {
     template(): IExtensionCommand {
@@ -45,9 +46,16 @@ export class PermissionCommand extends BaseCommand {
             const command = interaction.guild.commands.cache.find((item) => item.name === commandName);
             const commandId = command?.id ?? await fetchCommandId(commandName, interaction.guild);
 
-            
+            if (!commandId) return;
 
-            interaction.reply('Working on it');
+            if (!(users) && !(roles)) {
+                interaction.reply("You have to specify either a role, a user or both to set the permission on.");
+                return;
+            }
+
+            await updatePermission(commandId, interaction, users, roles, true);
+
+            interaction.reply('Permission have been updated.');
         },
         removePermissions: (interaction: CommandInteraction) => {
 
@@ -82,6 +90,42 @@ const fetchCommandId = async (commandName: string, guild: Guild) => {
     return commands.find((item) => item.name === commandName)?.id;
 }
 
-const updatePermission = async (commandId: string, users: string, roles: string, guild: Guild) => {
+const updatePermission = async (commandId: string, interaction: CommandInteraction, users: string | null, roles: string | null, _permission: boolean) => {
+    const commandManager = interaction.guild?.commands;
 
+    if (!!users) {
+        const permissions = parseDiscordUsers(users)?.map((user) => {
+            const permission: ApplicationCommandPermissions = {
+                id: user,
+                type: 'USER',
+                permission: _permission,
+            }
+            return permission;
+        });
+
+        if (!permissions) return;
+
+        await commandManager?.permissions.add({
+            command: commandId,
+            permissions: permissions,
+        });
+    }
+
+    if (!!roles) {
+        const permissions = parseDiscordRoles(roles)?.map((role) => {
+            const permission: ApplicationCommandPermissions = {
+                id: role,
+                type: 'ROLE',
+                permission: _permission,
+            }
+            return permission;
+        });
+
+        if (!permissions) return;
+
+        await commandManager?.permissions.add({
+            command: commandId,
+            permissions: permissions,
+        });
+    }
 }

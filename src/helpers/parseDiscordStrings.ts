@@ -1,7 +1,9 @@
-const parseDiscordUsers = (users: string) => {
-
+export const parseDiscordUsers = (users: string) => {
+    const regEx = /(?<=@!)(.*?)(?=>)/g;
+    return users.match(regEx);
 }
 
-const parseDiscordRoles = (roles: string) => {
-    
+export const parseDiscordRoles = (roles: string) => {
+    const regEx = /(?<=@&)(.*?)(?=>)/g;
+    return roles.match(regEx);
 }

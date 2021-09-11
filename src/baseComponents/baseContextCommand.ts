@@ -1,9 +1,10 @@
-import { IExtensionContextCommand, IExtensionState } from "../utility/types";
+import { StateStorage } from "../utility/stateStorage";
+import { IExtensionContextCommand } from "../utility/types";
 
 export abstract class BaseContextCommand {
-    $state?: IExtensionState;
+    $state: StateStorage;
 
-    constructor (state?: IExtensionState) {
+    constructor (state: StateStorage) {
         this.$state = state;
     }
 

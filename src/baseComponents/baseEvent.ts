@@ -1,8 +1,9 @@
-import { IExtensionEvent, IExtensionState } from "../utility/types";
+import { StateStorage } from "../utility/stateStorage";
+import { IExtensionEvent } from "../utility/types";
 
 export abstract class BaseEvent {
-    $state?: IExtensionState;
-    constructor(state?: IExtensionState) {
+    $state: StateStorage;
+    constructor(state: StateStorage) {
         this.$state = state;
     }
 

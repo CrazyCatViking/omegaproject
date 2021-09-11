@@ -95,11 +95,6 @@ export interface IApplicationContextCommand {
     type: ApplicationCommandType;
 }
 
-export interface IExtensionState {
-    readonly sessionState: ISessionState; // Only stored for the current local session
-    readonly sharedState: ISharedState; // Local shared state should always be reflected on that database
-}
-
 export interface IQueryObject {
     query: object;
     data?: object;
