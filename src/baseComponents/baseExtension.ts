@@ -1,6 +1,6 @@
-import { DbContext } from "../dbContext";
+import { DbContext } from "../utility/dbContext";
 import { IDatabaseContextKey, IExtensionCommand, IExtensionContextCommand, IExtensionEvent } from "../utility/types";
-import { StateStorage } from "../stateStorage";
+import { StateStorage } from "../utility/stateStorage";
 
 export abstract class BaseExtension {
     dbContext?: DbContext;

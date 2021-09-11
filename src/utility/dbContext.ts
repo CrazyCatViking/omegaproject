@@ -1,6 +1,6 @@
-import { BaseDbManager } from "./baseComponents/baseDbManager";
-import { MongoDbManager } from "./mongoDbManager";
-import { IDatabaseContextKey, ISharedState } from "./utility/types";
+import { BaseDbManager } from "../baseComponents/baseDbManager";
+import { MongoDbManager } from "../managers/mongoDbManager";
+import { IDatabaseContextKey, ISharedState } from "../utility/types";
 
 export class DbContext {
     private dbManager: BaseDbManager;

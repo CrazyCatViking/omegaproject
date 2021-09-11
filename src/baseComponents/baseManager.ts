@@ -1,6 +1,6 @@
 import { EventEmitter } from 'stream';
-import { DbContext } from '../dbContext';
-import { StateStorage } from '../stateStorage';
+import { DbContext } from '../utility/dbContext';
+import { StateStorage } from '../utility/stateStorage';
 import { IDatabaseContextKey } from '../utility/types';
 
 export abstract class BaseManager extends EventEmitter {   

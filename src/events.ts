@@ -1,5 +1,5 @@
 import { Client, Guild, Message, MessageReaction, PartialMessage, PartialMessageReaction, PartialUser, User } from "discord.js";
-import { GuildManager } from "./guildManager";
+import { GuildManager } from "./managers/guildManager";
 import { DiscordEventTypes, IEventPackage } from "./utility/types";
 
 export const events = (client: Client, connectedGuilds: Map<string, GuildManager>) => {

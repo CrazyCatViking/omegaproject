@@ -1,10 +1,9 @@
-import { CommandInteraction, ContextMenuInteraction } from "discord.js";
-import { IExtensionCommand, IExtensionCommandOption, IExtensionState, IExtensionSubCommand } from "../utility/types";
+import { IExtensionCommand, IExtensionState } from "../utility/types";
 
 export abstract class BaseCommand {
     $state?: IExtensionState;
 
-    constructor(state?: IExtensionState) {
+    constructor(state: IExtensionState) {
         this.$state = state;
     }
 

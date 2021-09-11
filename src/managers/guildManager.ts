@@ -1,10 +1,10 @@
 import { CommandInteraction, ContextMenuInteraction } from "discord.js";
-import { BaseManager } from "./baseComponents/baseManager";
+import { BaseManager } from "../baseComponents/baseManager";
 import { CommandManager } from "./commandManager";
 import { EventManager } from "./eventManager";
 import { ExtensionManager } from "./extensionManager";
-import { encode } from './utility/hashids';
-import { DiscordEventTypes, IEventPackage } from "./utility/types";
+import { encode } from '../utility/hashids';
+import { DiscordEventTypes, IEventPackage } from "../utility/types";
 
 export class GuildManager extends BaseManager {
     commandManager: CommandManager;

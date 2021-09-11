@@ -1,6 +1,6 @@
 import { MongoClient } from "mongodb";
-import { BaseDbManager } from "./baseComponents/baseDbManager";
-import { IDatabaseContextKey, IQueryObject, IQueryResult } from "./utility/types";
+import { BaseDbManager } from "../baseComponents/baseDbManager";
+import { IDatabaseContextKey, IQueryObject, IQueryResult } from "../utility/types";
 
 export class MongoDbManager extends BaseDbManager {
     client: MongoClient;

@@ -1,6 +1,6 @@
-import { BaseExtension } from "./baseComponents/baseExtension";
-import { BaseManager } from "./baseComponents/baseManager";
-import { DiscordEventTypes, IEventPackage, IExtensionEvent } from "./utility/types";
+import { BaseExtension } from "../baseComponents/baseExtension";
+import { BaseManager } from "../baseComponents/baseManager";
+import { DiscordEventTypes, IEventPackage, IExtensionEvent } from "../utility/types";
 
 export class EventManager extends BaseManager {
     public registerEventResponses(extensions: BaseExtension[]): void {

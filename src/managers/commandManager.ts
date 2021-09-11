@@ -3,11 +3,11 @@ import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import { CommandInteraction, ContextMenuInteraction } from 'discord.js';
 
-import { BaseExtension } from "./baseComponents/baseExtension";
-import { BaseManager } from "./baseComponents/baseManager";
-import { buildSlashCommand } from "./helpers/slashCommandBuilder";
-import { decode } from './utility/hashids';
-import { ApplicationCommandType, IApplicationContextCommand, IExtensionCommand, IExtensionContextCommand, InteractionCommandType } from './utility/types';
+import { BaseExtension } from "../baseComponents/baseExtension";
+import { BaseManager } from "../baseComponents/baseManager";
+import { buildSlashCommand } from "../helpers/slashCommandBuilder";
+import { decode } from '../utility/hashids';
+import { ApplicationCommandType, IApplicationContextCommand, IExtensionCommand, IExtensionContextCommand, InteractionCommandType } from '../utility/types';
 
 export class CommandManager extends BaseManager {
     constructor(hashGuildId: string) {

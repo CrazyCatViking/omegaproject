@@ -1,7 +1,7 @@
 import { Guild } from 'discord.js';
 import { discord } from './discord';
 import { events } from './events';
-import { GuildManager } from './guildManager';
+import { GuildManager } from './managers/guildManager';
 
 const connectedGuilds: Map<string, GuildManager> = new Map();
 const client = discord;

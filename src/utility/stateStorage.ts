@@ -1,5 +1,5 @@
 import { DbContext } from "./dbContext";
-import { ISessionState, ISharedState } from "./utility/types";
+import { ISessionState, ISharedState } from "./types";
 
 export class StateStorage {
     private dbContext?: DbContext;
