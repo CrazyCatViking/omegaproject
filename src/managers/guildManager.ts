@@ -5,6 +5,7 @@ import { EventManager } from "./eventManager";
 import { ExtensionManager } from "./extensionManager";
 import { encode } from '../utility/hashids';
 import { DiscordEventTypes, IEventPackage } from "../utility/types";
+import { setCommandNames } from "../utility/shared";
 
 export class GuildManager extends BaseManager {
     commandManager: CommandManager;
@@ -25,6 +26,7 @@ export class GuildManager extends BaseManager {
     }
 
     private init() {
+        setCommandNames(this.extensionManager.loadedExtensions);
         this.commandManager.registerCommands(this.extensionManager.loadedExtensions);
         this.commandManager.registerCommandResponse(this.extensionManager.loadedExtensions);
         this.eventManager.registerEventResponses(this.extensionManager.loadedExtensions);
