@@ -1,11 +1,12 @@
 import { EventEmitter } from 'stream';
 import { DbContext } from '../dbContext';
-import { IDatabaseContextKey, IManagerState } from '../utility/types';
+import { StateStorage } from '../stateStorage';
+import { IDatabaseContextKey } from '../utility/types';
 
 export abstract class BaseManager extends EventEmitter {   
     private dbContext?: DbContext;
     private databaseContextKey?: IDatabaseContextKey;
-    $state: IManagerState;
+    private $state: StateStorage;
     hashGuildId: string;
 
     constructor(hashGuildId: string, databseContextKey?: IDatabaseContextKey) {
@@ -13,13 +14,15 @@ export abstract class BaseManager extends EventEmitter {
 
         this.databaseContextKey = databseContextKey;
         this.hashGuildId = hashGuildId;
-        this.$state = {};
+
         if (!!this.databaseContextKey) this.sharedStateInit(this.databaseContextKey);
+        this.$state = new StateStorage(this.dbContext);
     }
 
     private async sharedStateInit(databaseContextKey: IDatabaseContextKey) {
         this.dbContext = new DbContext(databaseContextKey);
+
         await this.dbContext.init();
-        this.$state.sharedState = await this.dbContext.getSharedState({ query: {documentKey: this.databaseContextKey?.documentKey}});
+        await this.$state.initStateStorage();
     }
 }

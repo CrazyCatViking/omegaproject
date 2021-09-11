@@ -1,35 +1,51 @@
 import { BaseDbManager } from "./baseComponents/baseDbManager";
 import { MongoDbManager } from "./mongoDbManager";
-import { IDatabaseContextKey, IQueryObject } from "./utility/types";
+import { IDatabaseContextKey, IQueryObject, ISharedState } from "./utility/types";
 
 export class DbContext {
     private dbManager: BaseDbManager;
+    private databaseContextKey: IDatabaseContextKey;
+    private contextReady: boolean = false;
 
     constructor(databaseContextKey: IDatabaseContextKey) {
+        this.databaseContextKey = databaseContextKey;
         this.dbManager = new MongoDbManager(databaseContextKey);    
     }
 
     public async init() {
-        this.dbManager.init();
+        await this.dbManager.init();
+        this.contextReady = true;
     }
 
-    public async getSharedState(queryObject: IQueryObject) {
-        const queryResults = await this.dbManager.getDocument(queryObject);
-
-        if (!queryResults.result) throw("Failed to fetch shared state");
-
-        return queryResults.data;
+    public async getSharedState() {
+        const queryResults = await this.dbManager.getDocument({query: {key: this.databaseContextKey.documentKey}});
+        return queryResults;
     }
 
-    public async updateSharedState(queryObject: IQueryObject) {
-        const queryResults = await this.dbManager.updateDocument(queryObject);
+    public async updateSharedState(sharedState: ISharedState) {
+        const queryResults = await this.dbManager.updateDocument({query: {key: this.databaseContextKey.documentKey}, data: sharedState});
 
         if (!queryResults.result) throw("Failed to update shared state");
     }
 
-    public async deleteSharedState(queryObject: IQueryObject) {
-        const queryResults = await this.dbManager.deleteDocument(queryObject);
+    public async insertSharedState(sharedState: ISharedState) {
+        const queryResults = await this.dbManager.insertDocument({query: {}, data: {key: this.databaseContextKey.documentKey, document: sharedState}});
+
+        if (!queryResults.result) throw("Failed to insert shared state");
+    }
+
+    public async deleteSharedState() {
+        const queryResults = await this.dbManager.deleteDocument({query: {key: this.databaseContextKey.documentKey}});
 
         if (!queryResults.result) throw("Failed to delete shared state");
+    }
+
+    public async checkSharedState() {
+        const queryResults = await this.dbManager.getDocument({query: {key: this.databaseContextKey.documentKey}});
+        return queryResults.result;
+    }
+
+    public get ready() {
+        return this.contextReady;
     }
 }

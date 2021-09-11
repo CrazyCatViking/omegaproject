@@ -3,14 +3,6 @@ import { GuildManager } from "./guildManager";
 import { DiscordEventTypes, IEventPackage } from "./utility/types";
 
 export const events = (client: Client, connectedGuilds: Map<string, GuildManager>) => {
-    client.once('ready', () => {
-        client.guilds.cache.forEach((guild: Guild) => {
-            const newGuild = new GuildManager(guild.id);
-            connectedGuilds.set(guild.id, newGuild);
-        });
-        console.log('Ready');
-    });
-    
     client.on('guildCreate', (guild) => {
         const newGuild = new GuildManager(guild.id);
         connectedGuilds.set(guild.id, newGuild);
@@ -34,6 +26,8 @@ export const events = (client: Client, connectedGuilds: Map<string, GuildManager
         }
 
         const guildId = message.guildId;
+        if (guildId === null) return;
+
         if (!!guildId && connectedGuilds.has(guildId)) {
             connectedGuilds.get(guildId)?.event(DiscordEventTypes.MessageCreate, eventPackage); 
         }
@@ -47,6 +41,8 @@ export const events = (client: Client, connectedGuilds: Map<string, GuildManager
         }
 
         const guildId = message.guildId;
+        if (guildId === null) return;
+
         if (!!guildId && connectedGuilds.has(guildId)) {
             connectedGuilds.get(guildId)?.event(DiscordEventTypes.MessageDelete, eventPackage); 
         }
@@ -61,6 +57,8 @@ export const events = (client: Client, connectedGuilds: Map<string, GuildManager
         }
 
         const guildId = newMessage.guildId;
+        if (guildId === null) return;
+
         if (!!guildId && connectedGuilds.has(guildId)) {
             connectedGuilds.get(guildId)?.event(DiscordEventTypes.MessageUpdate, eventPackage); 
         }
@@ -77,6 +75,8 @@ export const events = (client: Client, connectedGuilds: Map<string, GuildManager
         }
 
         const guildId = reaction.message.guildId;
+        if (guildId === null) return;
+
         if (!!guildId && connectedGuilds.has(guildId)) {
             connectedGuilds.get(guildId)?.event(DiscordEventTypes.MessageReactionAdd, eventPackage); 
         }
@@ -93,6 +93,8 @@ export const events = (client: Client, connectedGuilds: Map<string, GuildManager
         }
 
         const guildId = reaction.message.guildId;
+        if (guildId === null) return;
+        
         if (!!guildId && connectedGuilds.has(guildId)) {
             connectedGuilds.get(guildId)?.event(DiscordEventTypes.MessageReactionRemove, eventPackage); 
         }

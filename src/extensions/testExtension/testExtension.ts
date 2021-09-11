@@ -1,5 +1,5 @@
 import { BaseExtension } from "../../baseComponents/baseExtension";
-import { IExtensionCommand, IExtensionContextCommand, IExtensionEvent, OptionTypes } from "../../utility/types";
+import { IExtensionCommand, IExtensionContextCommand, IExtensionEvent } from "../../utility/types";
 
 import { TestCommand } from "./commands/testCommand";
 import { TestContextCommand } from "./contextCommands/testContextCommand";
@@ -9,7 +9,7 @@ export class TestExtension extends BaseExtension {
     name: string = "testExtension";
 
     constructor(guildId: string) {
-        super({collectionKey: guildId, documentKey: 'test'});
+        super({collectionKey: guildId, documentKey: 'extension/test'});
     }
 
     commands(): IExtensionCommand[] {   

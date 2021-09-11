@@ -96,13 +96,8 @@ export interface IApplicationContextCommand {
 }
 
 export interface IExtensionState {
-    sessionState?: ISessionState; // Only stored for the current local session
-    sharedState?: ISharedState; // Local shared state should always be reflected on that database
-}
-
-export interface IManagerState {
-    sessionState?: ISessionState;
-    sharedState?: ISharedState;
+    readonly sessionState: ISessionState; // Only stored for the current local session
+    readonly sharedState: ISharedState; // Local shared state should always be reflected on that database
 }
 
 export interface IQueryObject {
@@ -115,5 +110,10 @@ export interface IQueryResult {
     data?: object;
 }
 
-export interface ISessionState {}
-export interface ISharedState {}
+export interface ISessionState {
+    ready?: boolean;
+}
+
+export interface ISharedState {
+
+}

@@ -13,6 +13,12 @@ export class MongoDbManager extends BaseDbManager {
 
     public async init() {
         await this.client.connect();
+
+        const db = this.client.db(process.env.DATABASE_NAME);
+        const collections = await db.collections();
+
+        const dbHasCollection = !!collections.find(collection => collection.collectionName === this.dataBaseContextKey.collectionKey);
+        if (!dbHasCollection) db.createCollection(this.dataBaseContextKey.collectionKey);
     }
 
     private getDatabaseCollection() {
@@ -22,10 +28,10 @@ export class MongoDbManager extends BaseDbManager {
 
     public async getDocument(queryObject: IQueryObject): Promise<IQueryResult> {
         const collection = this.getDatabaseCollection();
-        const document = await collection.findOne(queryObject.query);
+        const data = await collection.findOne(queryObject.query);
 
-        if (!!document) {
-            return {result: true, data: document};
+        if (!!data) {
+            return {result: true, data: data?.document};
         } else {
             return {result: false};
         }
@@ -45,7 +51,7 @@ export class MongoDbManager extends BaseDbManager {
     public async updateDocument(queryObject: IQueryObject): Promise<IQueryResult> {
         if (!!queryObject.data) {
             const collection = this.getDatabaseCollection();
-            const result = await collection.updateOne(queryObject.query, queryObject.data);
+            const result = await collection.updateOne(queryObject.query, {$set: {document: queryObject.data}});
 
             return {result: result.acknowledged};
         }

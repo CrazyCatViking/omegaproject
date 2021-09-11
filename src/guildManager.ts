@@ -10,6 +10,7 @@ export class GuildManager extends BaseManager {
     commandManager: CommandManager;
     extensionManager: ExtensionManager;
     eventManager: EventManager;
+    ready: boolean;
 
     constructor(guildId: string) {
         const hashGuildId: string = encode(guildId);
@@ -18,6 +19,7 @@ export class GuildManager extends BaseManager {
         this.commandManager = new CommandManager(hashGuildId);
         this.extensionManager = new ExtensionManager(hashGuildId);
         this.eventManager = new EventManager(hashGuildId);
+        this.ready = false;
 
         this.init();
     }
@@ -26,13 +28,16 @@ export class GuildManager extends BaseManager {
         this.commandManager.registerCommands(this.extensionManager.loadedExtensions);
         this.commandManager.registerCommandResponse(this.extensionManager.loadedExtensions);
         this.eventManager.registerEventResponses(this.extensionManager.loadedExtensions);
+        this.ready = true;
     }
 
     public interaction(interaction: CommandInteraction | ContextMenuInteraction) {
+        if (!this.ready) return;
         this.commandManager.interaction(interaction);
     }
 
     public event(eventType: DiscordEventTypes, eventPackage: IEventPackage) {
+        if (!this.ready) return;
         this.eventManager.event(eventType, eventPackage);
     }
 }
