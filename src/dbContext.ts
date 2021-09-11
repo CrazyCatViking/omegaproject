@@ -1,6 +1,6 @@
 import { BaseDbManager } from "./baseComponents/baseDbManager";
 import { MongoDbManager } from "./mongoDbManager";
-import { IDatabaseContextKey, IQueryObject, ISharedState } from "./utility/types";
+import { IDatabaseContextKey, ISharedState } from "./utility/types";
 
 export class DbContext {
     private dbManager: BaseDbManager;
@@ -38,11 +38,6 @@ export class DbContext {
         const queryResults = await this.dbManager.deleteDocument({query: {key: this.databaseContextKey.documentKey}});
 
         if (!queryResults.result) throw("Failed to delete shared state");
-    }
-
-    public async checkSharedState() {
-        const queryResults = await this.dbManager.getDocument({query: {key: this.databaseContextKey.documentKey}});
-        return queryResults.result;
     }
 
     public get ready() {
