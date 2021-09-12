@@ -8,7 +8,7 @@ export const buildSlashCommand = (extensionCommands: IExtensionCommand[]) => {
         const commandBuilder = new SlashCommandBuilder();
         commandBuilder.setName(command.name)
                       .setDescription(command.description)
-                      .setDefaultPermission(true);
+                      .setDefaultPermission(false);
 
         if (!!command.subCommands) {
             addSubCommands(commandBuilder, command.subCommands);

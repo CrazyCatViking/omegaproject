@@ -4,7 +4,7 @@ import { DiscordEventTypes, IEventPackage } from "./utility/types";
 
 export const events = (client: Client, connectedGuilds: Map<string, GuildManager>) => {
     client.on('guildCreate', (guild) => {
-        const newGuild = new GuildManager(guild.id);
+        const newGuild = new GuildManager(guild);
         connectedGuilds.set(guild.id, newGuild);
         console.log(connectedGuilds);
     });

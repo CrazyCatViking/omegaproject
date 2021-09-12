@@ -8,7 +8,7 @@ const client = discord;
 
 client.once('ready', () => {
     client.guilds.cache.forEach((guild: Guild) => {
-        const newGuild = new GuildManager(guild.id);
+        const newGuild = new GuildManager(guild);
         connectedGuilds.set(guild.id, newGuild);
     });
     events(client, connectedGuilds);

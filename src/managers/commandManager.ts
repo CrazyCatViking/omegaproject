@@ -14,7 +14,7 @@ export class CommandManager extends BaseManager {
         super(hashGuildId, { collectionKey: hashGuildId, documentKey: 'commands' });
     }
 
-    public registerCommands(extensions: BaseExtension[]): void {
+    public async registerCommands(extensions: BaseExtension[]) {
         const commandBuilders: SlashCommandBuilder[] = [];
         const contextCommands: IApplicationContextCommand[]  = [];
 
@@ -35,7 +35,7 @@ export class CommandManager extends BaseManager {
 
         const rest = new REST({version: '9'}).setToken(process.env.DISCORD_TOKEN as string);
 
-        (async () => {
+        await (async () => {
             try {console.log('Started refreshing application (/) commands.')
                 await rest.put(
                     Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID as string, String(decode(this.hashGuildId))),

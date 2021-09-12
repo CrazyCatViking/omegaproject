@@ -26,6 +26,7 @@ export class PermissionCommand extends BaseCommand {
                     description: 'Removed permission for the selected commands and users/roles',
                     method: this.methods.removePermissions,
                     options: [
+                        this.options.command,
                         this.options.users,
                         this.options.roles,
                     ]
@@ -55,10 +56,27 @@ export class PermissionCommand extends BaseCommand {
 
             await updatePermission(commandId, interaction, users, roles, true);
 
-            interaction.reply('Permission have been updated.');
+            interaction.reply('Permissions have been updated.');
         },
-        removePermissions: (interaction: CommandInteraction) => {
+        removePermissions: async (interaction: CommandInteraction) => {
+            const users = interaction.options.getString('users');
+            const roles = interaction.options.getString('roles');
+            const commandName = interaction.options.getString('command');
 
+            if (!(commandName)) return;
+            if (!(interaction.guild)) return;
+
+            const command = interaction.guild.commands.cache.find((item) => item.name === commandName);
+            const commandId = command?.id ?? await fetchCommandId(commandName, interaction.guild);
+
+            if (!commandId) return;
+
+            if (!(users) && !(roles)) {
+                interaction.reply("You have to specify either a role, a user or both to set the permission on.");
+                return;
+            }
+
+            await updatePermission(commandId, interaction, users, roles, false);
         },
     }
 
@@ -92,6 +110,8 @@ const fetchCommandId = async (commandName: string, guild: Guild) => {
 
 const updatePermission = async (commandId: string, interaction: CommandInteraction, users: string | null, roles: string | null, _permission: boolean) => {
     const commandManager = interaction.guild?.commands;
+    const userPermissions: ApplicationCommandPermissions[] = [];
+    const rolePermissions: ApplicationCommandPermissions[] = [];
 
     if (!!users) {
         const permissions = parseDiscordUsers(users)?.map((user) => {
@@ -103,12 +123,7 @@ const updatePermission = async (commandId: string, interaction: CommandInteracti
             return permission;
         });
 
-        if (!permissions) return;
-
-        await commandManager?.permissions.add({
-            command: commandId,
-            permissions: permissions,
-        });
+        if (permissions) userPermissions.push(...permissions);
     }
 
     if (!!roles) {
@@ -121,11 +136,23 @@ const updatePermission = async (commandId: string, interaction: CommandInteracti
             return permission;
         });
 
-        if (!permissions) return;
+        if (permissions) rolePermissions.push(...permissions);
+    }
 
+    if (!!userPermissions && !!rolePermissions) {
+        interaction.reply("You have to specify either a role, a user or both to set the permission on.");
+        return;
+    }
+
+    if (!!userPermissions || !!rolePermissions) {
         await commandManager?.permissions.add({
             command: commandId,
-            permissions: permissions,
+            permissions: [
+                ...userPermissions,
+                ...rolePermissions,
+            ],
         });
+
+        interaction.reply('Permissions have been updated.');
     }
 }

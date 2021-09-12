@@ -6,7 +6,7 @@ import { IDatabaseContextKey } from '../utility/types';
 export abstract class BaseManager extends EventEmitter {   
     private dbContext?: DbContext;
     private databaseContextKey?: IDatabaseContextKey;
-    private $state: StateStorage;
+    protected $state: StateStorage;
     hashGuildId: string;
 
     constructor(hashGuildId: string, databseContextKey?: IDatabaseContextKey) {
