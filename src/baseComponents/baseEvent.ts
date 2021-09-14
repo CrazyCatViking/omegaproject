@@ -2,7 +2,7 @@ import { StateStorage } from "../utility/stateStorage";
 import { IExtensionEvent } from "../utility/types";
 
 export abstract class BaseEvent {
-    $state: StateStorage;
+    protected $state: StateStorage;
     constructor(state: StateStorage) {
         this.$state = state;
     }

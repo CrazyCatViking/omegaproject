@@ -4,8 +4,8 @@ import { ISessionState, ISharedState } from "./types";
 export class StateStorage {
     private dbContext?: DbContext;
 
-    private $sessionState: ISessionState;
-    private $sharedState: ISharedState;
+    protected $sessionState: any;
+    protected $sharedState: any;
 
     constructor(dbContext?: DbContext) {
         this.dbContext = dbContext;
@@ -23,18 +23,18 @@ export class StateStorage {
     }
 
     get sessionState() {
-        return {...this.$sessionState};
+        return this.$sessionState;
     }
 
     get sharedState() {
         return {...this.$sharedState};
     }
 
-    set sessionState(sessionState: ISessionState) {
+    set sessionState(sessionState: any) {
         this.$sessionState = sessionState;
     }
 
-    set sharedState(sharedState: ISharedState) {
+    set sharedState(sharedState: any) {
         this.$sharedState = sharedState;
         if (this.dbContext?.ready) this.dbContext.updateSharedState(sharedState);
     }

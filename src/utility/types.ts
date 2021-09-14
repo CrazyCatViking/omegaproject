@@ -106,7 +106,7 @@ export interface IQueryResult {
 }
 
 export interface ISessionState {
-    ready?: boolean;
+
 }
 
 export interface ISharedState {

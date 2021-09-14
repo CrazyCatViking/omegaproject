@@ -55,8 +55,6 @@ export class PermissionCommand extends BaseCommand {
             }
 
             await updatePermission(commandId, interaction, users, roles, true);
-
-            interaction.reply('Permissions have been updated.');
         },
         removePermissions: async (interaction: CommandInteraction) => {
             const users = interaction.options.getString('users');
@@ -139,12 +137,12 @@ const updatePermission = async (commandId: string, interaction: CommandInteracti
         if (permissions) rolePermissions.push(...permissions);
     }
 
-    if (!!userPermissions && !!rolePermissions) {
+    if (!userPermissions.length && !rolePermissions.length) {
         interaction.reply("You have to specify either a role, a user or both to set the permission on.");
         return;
     }
 
-    if (!!userPermissions || !!rolePermissions) {
+    if (!!userPermissions.length || !!rolePermissions.length) {
         await commandManager?.permissions.add({
             command: commandId,
             permissions: [

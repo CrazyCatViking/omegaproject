@@ -6,7 +6,7 @@ export abstract class BaseExtension {
     dbContext?: DbContext;
     enabled: boolean = true;
     name: string = "baseExtension";
-    $state: StateStorage;
+    protected $state: StateStorage;
 
     constructor(databaseContextKey?: IDatabaseContextKey) {
         if (!!databaseContextKey) this.sharedStateInit(databaseContextKey);
