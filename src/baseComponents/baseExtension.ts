@@ -18,6 +18,11 @@ export abstract class BaseExtension {
         
         await this.dbContext.init();
         await this.$state.initStateStorage();
+        await this.init();
+    }
+
+    protected async init() {
+
     }
 
     commands(): IExtensionCommand[] {

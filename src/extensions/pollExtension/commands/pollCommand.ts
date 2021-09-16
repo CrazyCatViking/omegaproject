@@ -1,7 +1,9 @@
-import { CommandInteraction, CommandInteractionOptionResolver, Interaction, Options } from "discord.js";
+import { CommandInteraction, CommandInteractionOptionResolver, Message } from "discord.js";
 import { BaseCommand } from "../../../baseComponents/baseCommand";
+import { createDiscordEmbed } from "../../../helpers/createDiscordEmbed";
 import { IExtensionCommand, IExtensionCommandOption, OptionTypes } from "../../../utility/types";
-import { Poll } from "../poll";
+import { numberEmoji } from "../helpers/numberEmoji";
+import { Poll, PollStatus } from "../poll";
 
 enum PollMode {
     SingleVote = 'single-vote',
@@ -67,7 +69,7 @@ export class PollCommand extends BaseCommand {
         }    
     }
 
-    methods = {
+    private methods = {
         pollCreate: (interaction: CommandInteraction) => {
             const mode = interaction.options.getString('mode');
             const id = interaction.options.getString('id');
@@ -75,21 +77,124 @@ export class PollCommand extends BaseCommand {
 
             const options = getOptions(interaction.options);
 
-            if (!mode || !id || !description || !options.length) return;
+            if (!mode || !id || !description || !options.length) {
+                interaction.reply('One or more of the command inputs were invalid, try again');
+                return;
+            };
 
             const poll = new Poll(mode, id, description, options);
             this.$state.sessionState.polls.set(id, poll);
 
+            const sharedState = this.$state.sharedState;
+            if (!sharedState.polls) sharedState.polls = {};
+            sharedState.polls[id] = poll.storablePoll;
+            this.$state.sharedState = sharedState;
+
             interaction.reply(`Poll with id: ${id} was successfully created`);
         },
-        pollPost: (interaction: CommandInteraction) => {
+        pollPost: async (interaction: CommandInteraction) => {
+            const id = interaction.options.getString('id');
+            const channelId = interaction.channelId;
 
+            if (!id) {
+                interaction.reply('You must specify a poll id');
+                return;
+            }
+
+            if (!this.$state.sessionState.polls.has(id)) {
+                interaction.reply(`There is no poll with the id: ${id}`);
+                return;
+            }
+
+            const poll: Poll = this.$state.sessionState.polls.get(id);
+            const postablePoll = poll.postablePoll;
+            const pollOptions = getPostableOptions(postablePoll.options);
+            
+            const embed = createDiscordEmbed(`**${postablePoll.description}**`, {description: pollOptions});
+
+            await interaction.reply({embeds: [embed]});
+            const message = await interaction.fetchReply();
+            
+            if (!message) {
+                interaction.reply('Something went wrong when posting the poll, please try again.');
+                return;
+            }
+
+            setReactions(message as Message, postablePoll.options);
+
+            poll.pollMessageData = {messageId: message.id, channelId: channelId};
+            poll.status = PollStatus.Posted;
+            
+            const sharedState = this.$state.sharedState;
+            if (!sharedState.polls) sharedState.polls = {};
+            sharedState.polls[id] = poll.storablePoll;
+            this.$state.sharedState = sharedState;
         },
-        pollEnd: (interaction: CommandInteraction) => {
+        pollEnd: async (interaction: CommandInteraction) => {
+            const id = interaction.options.getString('id');
 
+            if (!id) {
+                interaction.reply('You must specify a poll id');
+                return;
+            }
+
+            if (!this.$state.sessionState.polls.has(id)) {
+                interaction.reply(`There is no poll with the id: ${id}`);
+                return;
+            }
+
+            if (this.$state.sessionState.polls.get(id).status !== PollStatus.Posted) {
+                interaction.reply(`The poll with id: ${id}, has not been posted yet`);
+                return;
+            }
+
+            const poll: Poll = this.$state.sessionState.polls.get(id);
+            const messageData = poll.getPollMessageData();
+
+            if (!messageData?.channelId) {
+                interaction.reply('The poll message data is not corretly defined. The poll cannot be ended, use /poll delete to remove it.');
+                return;
+            }
+
+            const channel = await interaction.guild?.channels.fetch(messageData?.channelId);
+
+            if (!channel?.isText()) {
+                interaction.reply('Could not find the channel the message was posted in. The poll cannot be ended, use /poll delete to remove it.');
+                return;
+            }
+
+            const message = await channel.messages.fetch(messageData.messageId);
+            const pollResults = getPollResults(message, poll.options);
+
+            const embed = createDiscordEmbed(`**${poll.description}**`, {description: pollResults});
+            interaction.reply({embeds: [embed]});
+
+            this.$state.sessionState.polls.delete(id);
+
+            const sharedState = this.$state.sharedState;
+            if (!sharedState.polls) sharedState.polls = {};
+            delete sharedState.polls[id]
+            this.$state.sharedState = sharedState;
         },
         pollDelete: (interaction: CommandInteraction) => {
+            const id = interaction.options.getString('id');
 
+            if (!id) {
+                interaction.reply('You must specify a poll id');
+                return;
+            }
+
+            if (!this.$state.sessionState.polls.has(id)) {
+                interaction.reply(`There is no poll with the id: ${id}`);
+                return;
+            }
+
+            this.$state.sessionState.polls.delete(id);
+
+            const sharedState = this.$state.sharedState;
+            if (!sharedState.polls) sharedState.polls = {};
+            delete sharedState.polls[id]
+            this.$state.sharedState = sharedState;
         },
         pollList: (interaction: CommandInteraction) => {
             let reply = "**These are the posted and un-posted polls:**\n";
@@ -101,7 +206,7 @@ export class PollCommand extends BaseCommand {
         },
     }
 
-    options = {
+    private options = {
         pollMode: {
             type: OptionTypes.String,
             input: 'mode',
@@ -146,4 +251,40 @@ const getOptions = (options: CommandInteractionOptionResolver): string[] => {
 
     if (!!pollOptions?.length) return pollOptions.map(item => item.value as string);
     return [];
+}
+
+const getPostableOptions = (pollOptions: string[]): string => {
+    const numberEmoji: string[] = ["1⃣", "2⃣", "3⃣","4⃣","5⃣","6⃣","7⃣","8⃣","9⃣"];
+    let polls: string = "";
+
+    pollOptions.forEach((item, index) => {
+        polls += `${numberEmoji[index]} ${item}\n`;
+    });
+
+    return polls;
+}
+
+const getPollResults = (message: Message, pollOptions: string[]): string => {
+    const reactions = message.reactions.cache.map((item) => ({
+        name: item.emoji.name, 
+        count: item.count - 1,
+    }));
+
+    let result: string = "";
+    reactions.forEach((item, index) => {
+        result += `${item.name} ${pollOptions[index]} got ${getCountString(item.count)}\n`;
+    });
+
+    return result;
+} 
+
+const getCountString = (count: number): string => {
+    if (count === 1) return `${count} vote`;
+    return `${count} votes`;
+}
+
+const setReactions = async (message: Message, pollOptions: string[]) => {
+    pollOptions.forEach(async (_, index) => {
+        await message.react(numberEmoji[index]);
+    });
 }

@@ -4,6 +4,11 @@ export enum PollStatus {
     Ended = "Ended",
 }
 
+export enum PollModes {
+    SingleVote = "singl-evote",
+    MultiVote = "multi-vote",
+}
+
 export interface IPollMessageData {
     messageId: string,
     channelId: string,
@@ -19,7 +24,6 @@ export interface IPollStorable {
 }
 
 export interface IPollPostable {
-    mode: string,
     id: string,
     description: string,
     options: string[],
@@ -29,23 +33,28 @@ export class Poll {
     private mode: string;
     public id: string;
     public description: string;
-    private options: string[];
-    public status: PollStatus = PollStatus.New;
+    private _options: string[];
+    public status: PollStatus;
     private _pollMessageData?: IPollMessageData;
 
-    constructor(mode: string, id: string, description: string, options: string[]) {
+    constructor(mode: string, id: string, description: string, options: string[], status: PollStatus = PollStatus.New, messageData?: IPollMessageData) {
         this.mode = mode;
         this.id = id;
         this.description = description;
-        this.options = options;
+        this._options = options;
+        this._pollMessageData = messageData;
+        this.status = status;
+    }
+
+    public get pollMode() {
+        return this.mode;
     }
 
     public get postablePoll(): IPollPostable {
         return {
-            mode: this.mode,
             id: this.id,
             description: this.description,
-            options: this.options,
+            options: this._options,
         }
     }
 
@@ -54,9 +63,9 @@ export class Poll {
             mode: this.mode,
             id: this.id,
             description: this.description,
-            options: this.options,
+            options: this._options,
             status: this.status,
-            pollMessageData: this.pollMessageData,
+            pollMessageData: this._pollMessageData,
         }   
     }
 
@@ -72,5 +81,9 @@ export class Poll {
     public endPoll() {
         this.status = PollStatus.Ended;
         this._pollMessageData = undefined;
+    }
+
+    public get options() {
+        return [...this._options];
     }
 }
