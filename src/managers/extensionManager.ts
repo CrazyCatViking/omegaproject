@@ -6,7 +6,7 @@ export class ExtensionManager extends BaseManager {
     loadedExtensions: BaseExtension[];
 
     constructor(hashGuildId: string) {
-        super(hashGuildId, { collectionKey: hashGuildId, documentKey: 'extensions' });
+        super(hashGuildId);
         this.loadedExtensions = extensions(hashGuildId);
     }
 }

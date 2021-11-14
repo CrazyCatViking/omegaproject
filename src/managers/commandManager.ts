@@ -10,10 +10,6 @@ import { decode } from '../utility/hashids';
 import { ApplicationCommandType, IApplicationContextCommand, IExtensionCommand, IExtensionContextCommand, InteractionCommandType } from '../utility/types';
 
 export class CommandManager extends BaseManager {
-    constructor(hashGuildId: string) {
-        super(hashGuildId, { collectionKey: hashGuildId, documentKey: 'commands' });
-    }
-
     public async registerCommands(extensions: BaseExtension[]) {
         const commandBuilders: SlashCommandBuilder[] = [];
         const contextCommands: IApplicationContextCommand[]  = [];

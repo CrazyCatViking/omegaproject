@@ -83,12 +83,12 @@ export class PollCommand extends BaseCommand {
             };
 
             const poll = new Poll(mode, id, description, options);
-            this.$state.sessionState.polls.set(id, poll);
+            this.$state.polls.set(id, poll);
 
-            const sharedState = this.$state.sharedState;
-            if (!sharedState.polls) sharedState.polls = {};
-            sharedState.polls[id] = poll.storablePoll;
-            this.$state.sharedState = sharedState;
+            // const sharedState = this.$state.sharedState;
+            // if (!sharedState.polls) sharedState.polls = {};
+            // sharedState.polls[id] = poll.storablePoll;
+            // this.$state.sharedState = sharedState;
 
             interaction.reply(`Poll with id: ${id} was successfully created`);
         },
@@ -101,12 +101,12 @@ export class PollCommand extends BaseCommand {
                 return;
             }
 
-            if (!this.$state.sessionState.polls.has(id)) {
+            if (!this.$state.polls.has(id)) {
                 interaction.reply(`There is no poll with the id: ${id}`);
                 return;
             }
 
-            const poll: Poll = this.$state.sessionState.polls.get(id);
+            const poll: Poll = this.$state.polls.get(id);
             const postablePoll = poll.postablePoll;
             const pollOptions = getPostableOptions(postablePoll.options);
             
@@ -125,10 +125,10 @@ export class PollCommand extends BaseCommand {
             poll.pollMessageData = {messageId: message.id, channelId: channelId};
             poll.status = PollStatus.Posted;
             
-            const sharedState = this.$state.sharedState;
-            if (!sharedState.polls) sharedState.polls = {};
-            sharedState.polls[id] = poll.storablePoll;
-            this.$state.sharedState = sharedState;
+            // const sharedState = this.$state.sharedState;
+            // if (!sharedState.polls) sharedState.polls = {};
+            // sharedState.polls[id] = poll.storablePoll;
+            // this.$state.sharedState = sharedState;
         },
         pollEnd: async (interaction: CommandInteraction) => {
             const id = interaction.options.getString('id');
@@ -138,17 +138,17 @@ export class PollCommand extends BaseCommand {
                 return;
             }
 
-            if (!this.$state.sessionState.polls.has(id)) {
+            if (!this.$state.polls.has(id)) {
                 interaction.reply(`There is no poll with the id: ${id}`);
                 return;
             }
 
-            if (this.$state.sessionState.polls.get(id).status !== PollStatus.Posted) {
+            if (this.$state.polls.get(id).status !== PollStatus.Posted) {
                 interaction.reply(`The poll with id: ${id}, has not been posted yet`);
                 return;
             }
 
-            const poll: Poll = this.$state.sessionState.polls.get(id);
+            const poll: Poll = this.$state.polls.get(id);
             const messageData = poll.getPollMessageData();
 
             if (!messageData?.channelId) {
@@ -169,12 +169,12 @@ export class PollCommand extends BaseCommand {
             const embed = createDiscordEmbed(`**${poll.description}**`, {description: pollResults});
             interaction.reply({embeds: [embed]});
 
-            this.$state.sessionState.polls.delete(id);
+            this.$state.polls.delete(id);
 
-            const sharedState = this.$state.sharedState;
-            if (!sharedState.polls) sharedState.polls = {};
-            delete sharedState.polls[id]
-            this.$state.sharedState = sharedState;
+            // const sharedState = this.$state.sharedState;
+            // if (!sharedState.polls) sharedState.polls = {};
+            // delete sharedState.polls[id]
+            // this.$state.sharedState = sharedState;
         },
         pollDelete: (interaction: CommandInteraction) => {
             const id = interaction.options.getString('id');
@@ -184,21 +184,21 @@ export class PollCommand extends BaseCommand {
                 return;
             }
 
-            if (!this.$state.sessionState.polls.has(id)) {
+            if (!this.$state.polls.has(id)) {
                 interaction.reply(`There is no poll with the id: ${id}`);
                 return;
             }
 
-            this.$state.sessionState.polls.delete(id);
+            this.$state.polls.delete(id);
 
-            const sharedState = this.$state.sharedState;
-            if (!sharedState.polls) sharedState.polls = {};
-            delete sharedState.polls[id]
-            this.$state.sharedState = sharedState;
+            // const sharedState = this.$state.sharedState;
+            // if (!sharedState.polls) sharedState.polls = {};
+            // delete sharedState.polls[id]
+            // this.$state.sharedState = sharedState;
         },
         pollList: (interaction: CommandInteraction) => {
             let reply = "**These are the posted and un-posted polls:**\n";
-            this.$state.sessionState.polls.forEach((item: Poll) => {
+            this.$state.polls.forEach((item: Poll) => {
                 reply += `**${item.id}:** ${item.description} | Status: ${item.status}\n`
             });
 

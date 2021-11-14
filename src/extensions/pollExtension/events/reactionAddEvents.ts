@@ -27,7 +27,7 @@ export class ReactionAddEvent extends BaseEvent {
             const messageId = reaction.message.id;
             let poll: Poll = {} as Poll;
 
-            this.$state.sessionState.polls.forEach((item: Poll) => {
+            this.$state.polls.forEach((item: Poll) => {
                 if (item.getPollMessageData()?.messageId === messageId) poll = item;
             });
 

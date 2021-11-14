@@ -7,6 +7,7 @@ import { encode } from '../utility/hashids';
 import { DiscordEventTypes, IEventPackage } from "../utility/types";
 import { setCommandNames } from "../utility/shared";
 import { setOwnerPermissions } from "../helpers/setOwnerPermissions";
+import { useGraphQL, GraphQLClient } from "../graphql/useGraphQL";
 
 export class GuildManager extends BaseManager {
     private guild: Guild;
@@ -17,7 +18,7 @@ export class GuildManager extends BaseManager {
 
     constructor(guild: Guild) {
         const hashGuildId: string = encode(guild.id);
-        super(hashGuildId, { collectionKey: hashGuildId, documentKey: 'guild' });
+        super(hashGuildId);
 
         this.guild = guild;
         this.commandManager = new CommandManager(hashGuildId);

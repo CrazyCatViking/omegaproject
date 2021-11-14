@@ -1,31 +1,36 @@
 import { Guild } from "discord.js";
 import { BaseExtension } from "../../baseComponents/baseExtension";
 import { discord } from "../../discord";
+import { useGraphQL } from "../../graphql/useGraphQL";
 import { decode } from "../../utility/hashids";
 import { IExtensionCommand, IExtensionEvent, ISessionState } from "../../utility/types";
 import { PollCommand } from "./commands/pollCommand";
 import { ReactionAddEvent } from "./events/reactionAddEvents";
 import { numberEmoji } from "./helpers/numberEmoji";
-import { IPollMessageData, IPollStorable, Poll, PollStatus } from "./poll";
+import { IPollMessageData, Poll, PollStatus } from "./poll";
+
+import { GET_POLLS } from './gql/pollQueries';
 
 export class PollExtension extends BaseExtension {
     name: string = 'pollExtension';
-    guildId: string;
-
-    constructor(guildId: string) {
-        super({collectionKey: guildId, documentKey: 'extension/pollExtension'});
-        this.guildId = guildId;
-        this.$state.sessionState.polls = new Map<string, Poll>();
-    }
 
     protected async init() {
-        const polls: Map<string, IPollStorable> = new Map(Object.entries(this.$state.sharedState.polls));
-        const guild = await discord.guilds.fetch(`${decode(this.guildId)}`);
+        const { client } = useGraphQL({ dbContext: this.$guildId });
+        const guild = await discord.guilds.fetch(`${decode(this.$guildId)}`);
+
+        this.$state.polls = new Map<string, Poll>();
+        
+        const res = await client.query({
+            query: GET_POLLS,
+        });
+
+        const { data } = res;
+        const polls = data.polls;
 
         if (!polls || !guild) return;
 
-        polls.forEach((item) => {
-            this.$state.sessionState.polls.set(item.id, new Poll(item.mode, item.id, item.description, item.options, item.status, item.pollMessageData));
+        polls.forEach((item: any) => {
+            this.$state.polls.set(item.id, new Poll(item.mode, item.id, item.description, item.options, item.status, item.pollMessageData));
             if (!item.pollMessageData || item.status !== PollStatus.Posted) return;
             initPoll(guild, item.pollMessageData)
         });
