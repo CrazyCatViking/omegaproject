@@ -1,8 +1,24 @@
 import { CommandInteraction } from "discord.js";
 import { BaseCommand } from "../../../baseComponents/baseCommand";
-import { IExtensionCommand, IExtensionCommandOption, OptionTypes } from "../../../utility/types";
+import { GraphQLClient, useGraphQL } from "../../../graphql/useGraphQL";
+import { 
+    ICommandOptions, 
+    IExtensionCommand, 
+    IExtensionCommandOption, 
+    OptionTypes 
+} from "../../../utility/types";
+import { GET_FFXIV_CHARACTER } from "../gql/ffxivQueries";
 
 export class FFXIVCommand extends BaseCommand {
+    client: GraphQLClient;
+
+    constructor(options: ICommandOptions) {
+        super(options);
+
+        const { client } = useGraphQL({ dbContext: this.$guildId });
+        this.client = client;
+    }
+
     template(): IExtensionCommand {
         return {
             name: 'ffxiv',
@@ -52,10 +68,24 @@ export class FFXIVCommand extends BaseCommand {
             const ffxivChrName = interaction.options.getString('ffxiv-character');
             const ffxivServer = interaction.options.getString('ffxiv-server');
         },
-        stats: (interaction: CommandInteraction) => {
+        stats: async (interaction: CommandInteraction) => {
             const user = interaction.options.getUser('discord-user');
             const ffxivChrName = interaction.options.getString('ffxiv-character');
             const ffxivServer = interaction.options.getString('ffxiv-server');
+
+            const variables = {
+                input: {
+                    name: ffxivChrName,
+                    server: ffxivServer,
+                },
+            }
+
+            const res = await this.client.query({
+                query: GET_FFXIV_CHARACTER,
+                variables,
+            });
+
+            interaction.reply(`${res.data.getCharacter.name}`);
         },
         gear: (interaction: CommandInteraction) => {
             const user = interaction.options.getUser('discord-user');
