@@ -33,31 +33,41 @@ export class GraphQLClient {
     this.authHeaders = authHeaders;
   }
 
-  public async query({query, variables}: IGraphQLQuery) {
-    const res = await axios({
-      url: this.graphQLUrl,
-      method: 'post',
-      data: {
-        query: print(query),
-        variables
-      },
-      headers: this.authHeaders,
-    });
+  public async query({ query, variables }: IGraphQLQuery) {
+    try {
+      const res = await axios({
+        url: this.graphQLUrl,
+        method: 'post',
+        data: {
+          query: print(query),
+          variables,
+        },
+        headers: this.authHeaders,
+      });
 
-    return res.data;
+      return res.data;
+    } catch (error: any) {
+      console.error(error.response.data)
+      return null;
+    }
   }
 
   public async mutation({ mutation, variables }: IGraphQLMutation) {
-    const res = await axios({
-      url: this.graphQLUrl,
-      method: 'post',
-      data: {
-        mutation: print(mutation),
-        variables,
-      },
-      headers: this.authHeaders,
-    });
-
-    return res.data;
+    try {
+      const res = await axios({
+        url: this.graphQLUrl,
+        method: 'post',
+        data: {
+          query: print(mutation),
+          variables,
+        },
+        headers: this.authHeaders,
+      });
+      
+      return res.data;
+    } catch (error: any) {
+      console.error(error.response.data)
+      return null;
+    }
   }
 }

@@ -10,8 +10,6 @@
     "dependencies": {
         "@discordjs/builders": "^0.6.0",
         "@discordjs/rest": "^0.1.0-canary.0",
-        "@graphql-tools/graphql-file-loader": "^7.3.3",
-        "@graphql-tools/load": "^7.4.1",
         "@types/jsonwebtoken": "^8.5.5",
         "axios": "^0.24.0",
         "discord-api-types": "^0.22.0",

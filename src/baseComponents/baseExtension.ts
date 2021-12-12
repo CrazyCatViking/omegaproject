@@ -1,4 +1,8 @@
-import { IExtensionCommand, IExtensionContextCommand, IExtensionEvent } from "../utility/types";
+import { 
+    IExtensionCommand, 
+    IExtensionContextCommand, 
+    IExtensionEvent 
+} from "../utility/types";
 
 export abstract class BaseExtension {
     enabled: boolean = true;

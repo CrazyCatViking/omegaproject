@@ -3,13 +3,13 @@ import { BaseExtension } from "../../baseComponents/baseExtension";
 import { discord } from "../../discord";
 import { useGraphQL } from "../../graphql/useGraphQL";
 import { decode } from "../../utility/hashids";
-import { IExtensionCommand, IExtensionEvent, ISessionState } from "../../utility/types";
+import { IExtensionCommand, IExtensionEvent } from "../../utility/types";
 import { PollCommand } from "./commands/pollCommand";
 import { ReactionAddEvent } from "./events/reactionAddEvents";
 import { numberEmoji } from "./helpers/numberEmoji";
 import { IPollMessageData, Poll, PollStatus } from "./poll";
 
-import { GET_POLLS } from './gql/pollQueries';
+import { ENABLE_POLL_EXTENSION, GET_POLLS } from './gql/pollQueries';
 
 export class PollExtension extends BaseExtension {
     name: string = 'pollExtension';
@@ -19,6 +19,13 @@ export class PollExtension extends BaseExtension {
         const guild = await discord.guilds.fetch(`${decode(this.$guildId)}`);
 
         this.$state.polls = new Map<string, Poll>();
+
+        // This could maybe be moved out to the extension manager...
+        const extensionEnabled = await client.mutation({
+            mutation: ENABLE_POLL_EXTENSION,
+        });
+
+        if (!extensionEnabled) return; // Should somehow handle this and throw error
         
         const res = await client.query({
             query: GET_POLLS,
@@ -37,7 +44,7 @@ export class PollExtension extends BaseExtension {
     }
 
     commands(): IExtensionCommand[] {
-        const pollCommand = new PollCommand(this.$state);
+        const pollCommand = new PollCommand({ state: this.$state, guildId: this.$guildId });
 
         return [
             pollCommand.command,

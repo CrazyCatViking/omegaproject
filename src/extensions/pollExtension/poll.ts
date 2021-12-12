@@ -14,7 +14,7 @@ export interface IPollMessageData {
     channelId: string,
 }
 
-export interface IPollStorable {
+export interface IPollStorable extends Record<string, unknown> {
     mode: string,
     id: string,
     description: string,

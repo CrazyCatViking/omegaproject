@@ -112,3 +112,8 @@ export interface ISessionState {
 export interface ISharedState {
 
 }
+
+export interface ICommandOptions {
+    state?: Record<string, unknown>;
+    guildId?: string;
+}

@@ -1,10 +1,12 @@
-import { IExtensionCommand } from "../utility/types";
+import { ICommandOptions, IExtensionCommand } from "../utility/types";
 
 export abstract class BaseCommand {
     protected $state: Record<string, any>;
+    protected $guildId: string;
 
-    constructor(state: Record<string, any>) {
-        this.$state = state;
+    constructor({ state, guildId }: ICommandOptions) {
+        this.$state = state ?? {};
+        this.$guildId = guildId ?? '';
     }
 
     get command(): IExtensionCommand {

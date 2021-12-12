@@ -1,9 +1,17 @@
 import { CommandInteraction, CommandInteractionOptionResolver, Message } from "discord.js";
+import { GraphQLClient, useGraphQL } from "../../../graphql/useGraphQL";
+
 import { BaseCommand } from "../../../baseComponents/baseCommand";
 import { createDiscordEmbed } from "../../../helpers/createDiscordEmbed";
-import { IExtensionCommand, IExtensionCommandOption, OptionTypes } from "../../../utility/types";
+import { 
+    ICommandOptions, 
+    IExtensionCommand, 
+    IExtensionCommandOption, 
+    OptionTypes 
+} from "../../../utility/types";
 import { numberEmoji } from "../helpers/numberEmoji";
 import { Poll, PollStatus } from "../poll";
+import { CREATE_POLL, UPDATE_POLL, DELETE_POLL } from "../gql/pollQueries";
 
 enum PollMode {
     SingleVote = 'single-vote',
@@ -11,6 +19,15 @@ enum PollMode {
 }
 
 export class PollCommand extends BaseCommand {
+    client: GraphQLClient;
+
+    constructor(options: ICommandOptions) {
+        super(options);
+
+        const { client } = useGraphQL({ dbContext: this.$guildId });
+        this.client = client;
+    }
+
     template(): IExtensionCommand {
         return {
             name: 'poll',
@@ -70,7 +87,7 @@ export class PollCommand extends BaseCommand {
     }
 
     private methods = {
-        pollCreate: (interaction: CommandInteraction) => {
+        pollCreate: async (interaction: CommandInteraction) => {
             const mode = interaction.options.getString('mode');
             const id = interaction.options.getString('id');
             const description = interaction.options.getString('description');
@@ -83,13 +100,20 @@ export class PollCommand extends BaseCommand {
             };
 
             const poll = new Poll(mode, id, description, options);
+
+            const res = await this.client.mutation({
+                mutation: CREATE_POLL,
+                variables: {
+                    input: poll.storablePoll
+                },
+            });
+
+            if (!res) {
+                interaction.reply(`Poll could not be created, please try again`);
+                return;
+            }
+
             this.$state.polls.set(id, poll);
-
-            // const sharedState = this.$state.sharedState;
-            // if (!sharedState.polls) sharedState.polls = {};
-            // sharedState.polls[id] = poll.storablePoll;
-            // this.$state.sharedState = sharedState;
-
             interaction.reply(`Poll with id: ${id} was successfully created`);
         },
         pollPost: async (interaction: CommandInteraction) => {
@@ -124,11 +148,13 @@ export class PollCommand extends BaseCommand {
 
             poll.pollMessageData = {messageId: message.id, channelId: channelId};
             poll.status = PollStatus.Posted;
-            
-            // const sharedState = this.$state.sharedState;
-            // if (!sharedState.polls) sharedState.polls = {};
-            // sharedState.polls[id] = poll.storablePoll;
-            // this.$state.sharedState = sharedState;
+
+            this.client.mutation({
+                mutation: UPDATE_POLL,
+                variables: {
+                    input: poll.storablePoll,
+                },
+            });
         },
         pollEnd: async (interaction: CommandInteraction) => {
             const id = interaction.options.getString('id');
@@ -171,10 +197,10 @@ export class PollCommand extends BaseCommand {
 
             this.$state.polls.delete(id);
 
-            // const sharedState = this.$state.sharedState;
-            // if (!sharedState.polls) sharedState.polls = {};
-            // delete sharedState.polls[id]
-            // this.$state.sharedState = sharedState;
+            this.client.mutation({
+                mutation: DELETE_POLL,
+                variables: { id },
+            });
         },
         pollDelete: (interaction: CommandInteraction) => {
             const id = interaction.options.getString('id');
@@ -191,10 +217,12 @@ export class PollCommand extends BaseCommand {
 
             this.$state.polls.delete(id);
 
-            // const sharedState = this.$state.sharedState;
-            // if (!sharedState.polls) sharedState.polls = {};
-            // delete sharedState.polls[id]
-            // this.$state.sharedState = sharedState;
+            this.client.mutation({
+                mutation: DELETE_POLL,
+                variables: { id },
+            });
+
+            interaction.reply(`Poll with id: ${id}, has been deleted`);
         },
         pollList: (interaction: CommandInteraction) => {
             let reply = "**These are the posted and un-posted polls:**\n";
