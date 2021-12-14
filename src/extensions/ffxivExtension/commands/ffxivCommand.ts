@@ -77,6 +77,7 @@ export class FFXIVCommand extends BaseCommand {
                 input: {
                     name: ffxivChrName,
                     server: ffxivServer,
+                    data: 'MIMO',
                 },
             }
 
@@ -84,6 +85,8 @@ export class FFXIVCommand extends BaseCommand {
                 query: GET_FFXIV_CHARACTER,
                 variables,
             });
+
+            console.log(res.data.getCharacter);
 
             interaction.reply(`${res.data.getCharacter.name}`);
         },
