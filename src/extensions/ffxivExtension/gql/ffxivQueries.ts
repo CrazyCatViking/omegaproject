@@ -8,6 +8,7 @@ export const GET_FFXIV_CHARACTER = gql`
       title
       activeJob
       avatar
+      portrait
 
       jobs {
         className

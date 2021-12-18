@@ -1,6 +1,9 @@
 import { CommandInteraction } from "discord.js";
 import { BaseCommand } from "../../../baseComponents/baseCommand";
 import { GraphQLClient, useGraphQL } from "../../../graphql/useGraphQL";
+import { createDiscordEmbed } from "../../../helpers/createDiscordEmbed";
+import { useGranvas } from "../../../utility/granvas-js";
+import { AnchorPointX, AnchorPointY, IElementPosition, IGridSettings } from "../../../utility/granvas-js/types";
 import { 
     ICommandOptions, 
     IExtensionCommand, 
@@ -8,6 +11,7 @@ import {
     OptionTypes 
 } from "../../../utility/types";
 import { GET_FFXIV_CHARACTER } from "../gql/ffxivQueries";
+import { renderCharacterStats } from "../imageRenderers/ffxivCharacterStats";
 
 export class FFXIVCommand extends BaseCommand {
     client: GraphQLClient;
@@ -69,6 +73,8 @@ export class FFXIVCommand extends BaseCommand {
             const ffxivServer = interaction.options.getString('ffxiv-server');
         },
         stats: async (interaction: CommandInteraction) => {
+            const { renderImage, addElement, createTextElement, createImageElement, createGrid } = useGranvas({ width: 1280, height: 720 });
+
             const user = interaction.options.getUser('discord-user');
             const ffxivChrName = interaction.options.getString('ffxiv-character');
             const ffxivServer = interaction.options.getString('ffxiv-server');
@@ -81,14 +87,15 @@ export class FFXIVCommand extends BaseCommand {
                 },
             }
 
-            const res = await this.client.query({
+            await interaction.deferReply();
+
+            const { data: { getCharacter } } = await this.client.query({
                 query: GET_FFXIV_CHARACTER,
                 variables,
             });
 
-            console.log(res.data.getCharacter);
-
-            interaction.reply(`${res.data.getCharacter.name}`);
+            const chrStatImage = await renderCharacterStats(getCharacter);
+            interaction.editReply({ files: [chrStatImage] });
         },
         gear: (interaction: CommandInteraction) => {
             const user = interaction.options.getUser('discord-user');
