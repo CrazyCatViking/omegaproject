@@ -55,7 +55,7 @@ export default abstract class BaseCanvasElement {
         _y += y;
         break;
       case AnchorPointY.Center:
-        _y += y + this.size.height / 2;
+        _y += y - this.size.height / 2;
         break;
       case AnchorPointY.Bottom: 
         _y += y + this.size.height;

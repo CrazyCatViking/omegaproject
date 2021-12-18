@@ -11,10 +11,11 @@ const defaultSize = {
 export default class ImageElement extends BaseCanvasElement {
   private _textSource?: string;
   private _fontSource?: string;
+  private _fontSize?: number;
   private _textColor = 'rgb(255, 255, 255)';
 
-  constructor(context: NodeCanvasRenderingContext2D, { position, containerPosition }: IElementOptions) {
-    super(context, { size: defaultSize, position, containerPosition});
+  constructor(context: NodeCanvasRenderingContext2D, options?: IElementOptions) {
+    super(context, { size: defaultSize, ...options });
   }
   
   public renderElement(): void {
@@ -23,30 +24,31 @@ export default class ImageElement extends BaseCanvasElement {
       return;
     }
 
-    if (!this._fontSource) {
+    if (!this._fontSource || !this._fontSize) {
       console.warn('Skipping text, no font source was set'); // Set default source?
       return;
     }
 
-    this.context.font = this._fontSource;
+    this.context.font = `${this._fontSize}px ${this._fontSource}`;
     this.context.fillStyle = this._textColor;
+    this.context.textBaseline = 'top'
     this.updateSize();
 
     this.context.fillText(this._textSource, ...this.relativeCoordinates);
   }
 
-  public set sources({ text, font, color }: ITextElementOptions) {
+  public set sources({ text, font, fontSize, color }: ITextElementOptions) {
     this._textSource = text;
     this._fontSource = font;
+    this._fontSize = fontSize;
     this._textColor = color;
   }
 
   private updateSize() {
-    if (!this._textSource) return;
+    if (!this._textSource || !this._fontSource || !this._fontSize) return;
     const textMetrics = this.context.measureText(this._textSource);
     const width = textMetrics.width;
-    const height = textMetrics.fontBoundingBoxDescent - textMetrics.fontBoundingBoxAscent;
 
-    this.size = { width, height };
+    this.size = { width, height: this._fontSize };
   }
 }

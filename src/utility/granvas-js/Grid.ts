@@ -6,14 +6,18 @@ import { AnchorPointX, AnchorPointY, IElementOptions, IElementPosition, IGridPos
 export default class Grid extends CanvasContainer {
   gridSettings: IGridSettings;
 
-  constructor(context: NodeCanvasRenderingContext2D, options: IElementOptions, gridSettings: IGridSettings) {
-    super(context, options);
-
+  constructor(context: NodeCanvasRenderingContext2D, gridSettings: IGridSettings) {
+    super(context, { size: { width: 0, height: 0 } });
+ 
     this.gridSettings = gridSettings;
+    this.setGridSize();
   }
 
   public renderElement(): void {
     this.elements.forEach((element: BaseCanvasElement) => {
+      const [x, y] = this.relativeCoordinates;
+      element.containerPosition = {x, y};
+
       element.renderElement();
     });
   }
@@ -28,10 +32,21 @@ export default class Grid extends CanvasContainer {
     }
 
     const position = this.getGridCoordinates(gridPosition);
+
     element.position = position;
-    element.containerPosition = this.position;
 
     this.elements.push(element);
+  }
+
+  private setGridSize() {
+    const { elementSize, elementBorders, rows, columns } = this.gridSettings;
+    const { width: _width, height: _height } = elementSize;
+    const { left, right, top, bottom } = elementBorders;
+
+    const width = (_width + left + right) * columns;
+    const height = (_height + top + bottom) * rows;
+
+    this.size = { width, height };
   }
 
   private getGridCoordinates({ row, column }: IGridPosition): IElementPosition {
@@ -45,8 +60,8 @@ export default class Grid extends CanvasContainer {
     const totalWidth = (width + left + right);
     const totalHeight = (height + top + bottom);
 
-    const x = (totalWidth * (row - 1)) + (width / 2) + left;
-    const y = (totalHeight * (column - 1)) + (height / 2) + top;
+    const x = (totalWidth * (column - 1)) + (width / 2) + left;
+    const y = (totalHeight * (row - 1)) + (height / 2) + top;
 
     return {
       x,

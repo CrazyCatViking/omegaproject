@@ -45,20 +45,15 @@ export interface IImageElementSource {
 export interface ITextElementOptions {
   text: string;
   font: string;
+  fontSize: number;
   color: string;
 }
 
 export interface IGridSettings {
   rows: number;
   columns: number;
-  gridSize: IGridSize;
   elementSize: IGridElementSize;
   elementBorders: IGridElementBorder;
-}
-
-export interface IGridSize {
-  width: number;
-  height: number;
 }
 
 export interface IGridElementSize {

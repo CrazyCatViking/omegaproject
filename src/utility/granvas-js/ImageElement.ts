@@ -6,13 +6,15 @@ import { IImageElementSource, SourceType } from "./types";
 
 export default class ImageElement extends BaseCanvasElement {
   private _imageSource?: Image;
-  
+
   public renderElement(): void {
     if (!this._imageSource) {
       console.warn('Skipping image, no source was specified'); // Should be traceable, throw?
       return;
     }
-    this.context.drawImage(this._imageSource, ...this.relativeCoordinates);
+
+    const { width, height } = this.size;
+    this.context.drawImage(this._imageSource, ...this.relativeCoordinates, width, height);
   }
 
   public async setImageSource({ path, type }: IImageElementSource)  {
