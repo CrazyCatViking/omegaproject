@@ -6,7 +6,6 @@ export const events = (client: Client, connectedGuilds: Map<string, GuildManager
     client.on('guildCreate', (guild) => {
         const newGuild = new GuildManager(guild);
         connectedGuilds.set(guild.id, newGuild);
-        console.log(connectedGuilds);
     });
 
     client.on('interactionCreate', (interaction) => {

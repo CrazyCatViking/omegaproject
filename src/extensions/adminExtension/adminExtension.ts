@@ -6,7 +6,7 @@ export class AdminExtension extends BaseExtension {
     name: string = 'adminExtension';
 
     commands(): IExtensionCommand[] {
-        const permissionCommand = new PermissionCommand(this.$state);
+        const permissionCommand = new PermissionCommand({ state: this.$state, guildId: this.$guildId });
 
         return [
             permissionCommand.command,
