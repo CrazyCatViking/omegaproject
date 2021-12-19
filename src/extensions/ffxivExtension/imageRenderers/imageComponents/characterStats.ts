@@ -1,7 +1,6 @@
 import { NodeCanvasRenderingContext2D } from "canvas";
 import { createContainer, createImageElement, createTextElement } from "../../../../utility/granvas-js";
 import { AnchorPointX, AnchorPointY, IElementOptions, IElementPosition, ITextElementOptions, SourceType } from "../../../../utility/granvas-js/types";
-import { activeJobStats } from "./activeJobStats";
 import { jobGrid } from "./jobLevelGrid";
 import { minionMountStats } from "./minionMountStats";
 

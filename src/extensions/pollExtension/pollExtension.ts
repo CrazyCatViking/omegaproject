@@ -21,11 +21,11 @@ export class PollExtension extends BaseExtension {
         this.$state.polls = new Map<string, Poll>();
 
         // This could maybe be moved out to the extension manager...
-        const extensionEnabled = await client.mutation({
+        const { data: { enablePollExtension } } = await client.mutation({
             mutation: ENABLE_POLL_EXTENSION,
         });
 
-        if (!extensionEnabled) return; // Should somehow handle this and throw error
+        if (!enablePollExtension) return; // Should somehow handle this and throw error
         
         const res = await client.query({
             query: GET_POLLS,
@@ -39,7 +39,7 @@ export class PollExtension extends BaseExtension {
         polls.forEach((item: any) => {
             this.$state.polls.set(item.id, new Poll(item.mode, item.id, item.description, item.options, item.status, item.pollMessageData));
             if (!item.pollMessageData || item.status !== PollStatus.Posted) return;
-            initPoll(guild, item.pollMessageData)
+            initPoll(guild, item.pollMessageData);
         });
     }
 

@@ -1,60 +1,29 @@
 import gql from 'graphql-tag';
 
-export const GET_FFXIV_CHARACTER = gql`
-  query getCharacter($input: FFXIVGetChrInput!) {
+export const GET_FFXIV_CHARACTER_STATS = gql`
+  query getCharacterStats($input: FFXIVGetChrInput!) {
     getCharacter(input: $input) {
       id
       name
       title
       activeJob
-      avatar
       portrait
 
       jobs {
-        className
         jobName
-
-        classId
         jobId
-        expLevel
-        expLevelMax
         level
-
-        specialised
-        jobUnlocked
-      }
-
-      gear {
-        type
-        id
-        icon
-        name
-        itemLevel
-        glamour {
-          id
-          name
-        }
       }
 
       mounts {
         totalMounts
         ownedMounts
-        items {
-          id
-          name
-        }
       }
 
       minions {
         totalMinions
         ownedMinions
-        items {
-          id
-          name
-        }
       }
-      
-      guardianDeity
     }
   }
 `;
@@ -62,7 +31,24 @@ export const GET_FFXIV_CHARACTER = gql`
 export const FIND_FFXIV_CHARACTER = gql`
   query findCharacter($name: String, $server: String) {
     findCharacter(name: $name, server: $server) {
-      name
+      totalCount
+      items {
+        id
+        name
+        avatar
+      }
     }
+  }
+`;
+
+export const SET_FFXIV_CHARACTER = gql`
+  mutation setCharacter($discordId: String!, $ffxivId: Int!) {
+    setCharacter(discordId: $discordId, ffxivId: $ffxivId)
+  }
+`;
+
+export const ENABLE_FFXIV_EXTENSION = gql`
+  mutation enableExtension {
+    enableExtension
   }
 `;
