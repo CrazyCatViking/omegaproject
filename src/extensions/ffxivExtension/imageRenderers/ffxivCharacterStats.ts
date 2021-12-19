@@ -1,5 +1,4 @@
 import { useGranvas } from "../../../utility/granvas-js"
-import { SourceType } from "../../../utility/granvas-js/types";
 import { characterStats } from "./imageComponents/characterStats";
 import { characterView } from "./imageComponents/characterView";
 import { characterFrame } from "./imageComponents/frame";

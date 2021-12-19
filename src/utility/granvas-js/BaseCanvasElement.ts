@@ -16,6 +16,11 @@ const defaultPosition: IElementPosition = {
   },
 };
 
+const defaultSize: IElementSize = {
+  width: 0,
+  height: 0,
+};
+
 export default abstract class BaseCanvasElement {
   context: NodeCanvasRenderingContext2D;
   size: IElementSize;
@@ -24,7 +29,7 @@ export default abstract class BaseCanvasElement {
   
   constructor(context: NodeCanvasRenderingContext2D, {size, position, containerPosition }: IElementOptions) {
     this.context = context;
-    this.size = size;
+    this.size = size ?? defaultSize;
     this.position = position ?? defaultPosition;
     this.containerPosition = containerPosition ?? { x: 0, y: 0 };
   }
@@ -58,7 +63,7 @@ export default abstract class BaseCanvasElement {
         _y += y - this.size.height / 2;
         break;
       case AnchorPointY.Bottom: 
-        _y += y + this.size.height;
+        _y += y - this.size.height;
         break; 
     }
 

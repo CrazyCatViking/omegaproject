@@ -32,7 +32,7 @@ export interface IElementPosition {
 }
 
 export interface IElementOptions {
-  size: IElementSize;
+  size?: IElementSize;
   position?: IElementPosition;
   containerPosition?: { x: number, y: number };
 }

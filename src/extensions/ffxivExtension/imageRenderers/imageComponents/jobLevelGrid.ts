@@ -1,7 +1,8 @@
 import { NodeCanvasRenderingContext2D } from "canvas";
 import { createGrid, createImageElement, createTextElement } from "../../../../utility/granvas-js";
 import Grid from "../../../../utility/granvas-js/Grid";
-import { AnchorPointX, AnchorPointY, IElementOptions, IElementPosition, IGridSettings, ITextElementOptions, SourceType } from "../../../../utility/granvas-js/types"
+import { AnchorPointX, AnchorPointY, IElementPosition, IGridSettings, ITextElementOptions, SourceType } from "../../../../utility/granvas-js/types"
+import { getJobIcon } from "../helpers";
 
 export interface IXIVJob {
   className?: string;
@@ -21,7 +22,7 @@ export const jobGrid = async (context: NodeCanvasRenderingContext2D, jobs: IXIVJ
     columns: 4,
     elementBorders: {
       top: 0,
-      bottom: 0,
+      bottom: 10,
       right: 10,
       left: 10,
     },
@@ -108,9 +109,4 @@ const getAllJobs = async (context: NodeCanvasRenderingContext2D, jobs: IXIVJob[]
   }));
 
   return jobGrids;
-};
-
-const getJobIcon = (jobName: string) => {
-  const noSpaceName = jobName.replace(' ', '');
-  return `./src/extensions/ffxivExtension/resources/icons/${noSpaceName}.png`;
 };

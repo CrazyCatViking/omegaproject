@@ -23,15 +23,13 @@ export const minionMountStats = (context: NodeCanvasRenderingContext2D, data: an
       height: 100,
     },
   };
-
-  console.log(data.minions, data.mounts);
   
   const gridPosition: IElementPosition = {
     x: 320,
-    y: 50,
+    y: 823,
     anchorPoint: {
       x_axis: AnchorPointX.Center,
-      y_axis: AnchorPointY.Top,
+      y_axis: AnchorPointY.Bottom,
     },
   };
 
