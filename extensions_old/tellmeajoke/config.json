@@ -1,8 +1,0 @@
-{
-    "namespace": "joke",
-    "useDB": false,
-    "legacyMode": true,  
-    "subCommands": [],
-    "events": ["message"],
-    "help": {}
-}
