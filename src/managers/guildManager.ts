@@ -5,7 +5,7 @@ import { EventManager } from "./eventManager";
 import { ExtensionManager } from "./extensionManager";
 import { encode } from '../utility/hashids';
 import { DiscordEventTypes, IEventPackage } from "../utility/types";
-import { setCommandNames } from "../utility/shared";
+import { useCommandNames } from "../utility/shared";
 import { setOwnerPermissions } from "../helpers/setOwnerPermissions";
 import { useGraphQL, GraphQLClient } from "../graphql/useGraphQL";
 
@@ -30,6 +30,8 @@ export class GuildManager extends BaseManager {
     }
 
     private async init() {
+        const { setCommandNames } = useCommandNames(this.hashGuildId);
+        
         setCommandNames(this.extensionManager.loadedExtensions);
         await this.commandManager.registerCommands(this.extensionManager.loadedExtensions);
         this.commandManager.registerCommandResponse(this.extensionManager.loadedExtensions);

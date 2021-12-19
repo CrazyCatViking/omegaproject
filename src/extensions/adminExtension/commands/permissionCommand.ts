@@ -1,7 +1,7 @@
 import { ApplicationCommandPermissions, CommandInteraction, Guild } from "discord.js";
 
 import { BaseCommand } from "../../../baseComponents/baseCommand";
-import { getCommandChoices } from "../../../utility/shared";
+import { useCommandNames } from "../../../utility/shared";
 import { IExtensionCommand, IExtensionCommandOption, OptionTypes } from "../../../utility/types";
 import { parseDiscordRoles, parseDiscordUsers } from "../../../helpers/parseDiscordStrings";
 
@@ -96,7 +96,7 @@ export class PermissionCommand extends BaseCommand {
             input: 'command',
             description: 'the command to set permission for',
             required: true,
-            choices: getCommandChoices(),
+            choices: commandChoices(this.$guildId),
         }
     }
 }
@@ -153,4 +153,9 @@ const updatePermission = async (commandId: string, interaction: CommandInteracti
 
         interaction.reply('Permissions have been updated.');
     }
+}
+
+const commandChoices = (guildHashId: string) => {
+    const { getCommandChoices } = useCommandNames(guildHashId);
+    return getCommandChoices();
 }
