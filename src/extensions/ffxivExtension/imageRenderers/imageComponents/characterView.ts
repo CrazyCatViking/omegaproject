@@ -29,7 +29,7 @@ export const characterView = async (context: NodeCanvasRenderingContext2D, data:
   const activeJob = data.jobs.find((item: any) => item.jobId === data.activeJob);
 
   const profileSource: IImageElementSource = { path: data.portrait, type: SourceType.WebSource };
-  const jobIconSource: IImageElementSource = { path: getJobIcon(activeJob.jobName), type: SourceType.LocalSource };
+  const jobIconSource: IImageElementSource = { path: getJobIcon(activeJob?.jobName ?? 'reaper'), type: SourceType.LocalSource };
 
   const container = createContainer(context, options);
   const profileImage = createImageElement(context, options);

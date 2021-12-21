@@ -120,14 +120,20 @@ export class FFXIVCommand extends BaseCommand {
             const ffxivChrName = interaction.options.getString('ffxiv-character');
             const ffxivServer = interaction.options.getString('ffxiv-server');
 
+            let userId = user?.id;
+            
+            if (!userId && !ffxivChrName && !ffxivServer) {
+                userId = interaction.user.id;
+            }
+
             const variables = {
                 input: {
-                    discordId: user?.id,
+                    discordId: userId,
                     name: ffxivChrName,
                     server: ffxivServer,
                     data: 'MIMO',
                 },
-            }
+            };
 
             await interaction.deferReply();
 

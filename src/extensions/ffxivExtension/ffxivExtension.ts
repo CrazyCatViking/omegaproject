@@ -1,7 +1,8 @@
 import { BaseExtension } from "../../baseComponents/baseExtension";
 import { useGraphQL } from "../../graphql/useGraphQL";
-import { IExtensionCommand } from "../../utility/types";
+import { IExtensionCommand, IExtensionContextCommand } from "../../utility/types";
 import { FFXIVCommand } from "./commands/ffxivCommand";
+import { FFXIVContextCommands } from "./contextCommands/ffxivContextCommands";
 import { ENABLE_FFXIV_EXTENSION } from "./gql/ffxivQueries";
 
 export class FFXIVExtension extends BaseExtension {
@@ -23,6 +24,14 @@ export class FFXIVExtension extends BaseExtension {
 
         return [
             ffxivCommand.command,
+        ]
+    }
+
+    contextCommands(): IExtensionContextCommand[] {
+        const ffxivContextCommands = new FFXIVContextCommands({ state: this.$state, guildId: this.$guildId });
+
+        return [
+            ffxivContextCommands.command,
         ]
     }
 }
