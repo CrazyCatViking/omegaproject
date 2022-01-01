@@ -1,8 +1,18 @@
-import { Client, Guild, Message, MessageReaction, PartialMessage, PartialMessageReaction, PartialUser, User } from "discord.js";
+import { Client, Message, MessageReaction, PartialMessage, PartialMessageReaction, PartialUser, User } from "discord.js";
 import { GuildManager } from "./managers/guildManager";
 import { DiscordEventTypes, IEventPackage } from "./utility/types";
+import { IErrorContext, logError } from './sentry'; 
 
 export const events = (client: Client, connectedGuilds: Map<string, GuildManager>) => {
+    client.on('error', (error) => {
+        const context: IErrorContext = {
+            name: 'discord.js',
+            ctx: null,
+        };
+
+        logError(error, context);
+    });
+
     client.on('guildCreate', (guild) => {
         const newGuild = new GuildManager(guild);
         connectedGuilds.set(guild.id, newGuild);
