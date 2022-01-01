@@ -1,4 +1,4 @@
-import { CommandInteraction, CommandInteractionOptionResolver, Message } from "discord.js";
+import { CacheType, CommandInteraction, CommandInteractionOptionResolver, Message } from "discord.js";
 import { GraphQLClient, useGraphQL } from "../../../graphql/useGraphQL";
 
 import { BaseCommand } from "../../../baseComponents/baseCommand";
@@ -274,7 +274,7 @@ export class PollCommand extends BaseCommand {
     }
 }
 
-const getOptions = (options: CommandInteractionOptionResolver): string[] => {
+const getOptions = (options: Omit<CommandInteractionOptionResolver<CacheType>, "getMessage" | "getFocused">): string[] => {
     const pollOptions = options.data[0].options?.filter(item => item.name.includes('option'));
 
     if (!!pollOptions?.length) return pollOptions.map(item => item.value as string);
