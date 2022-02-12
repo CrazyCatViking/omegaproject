@@ -15,7 +15,7 @@ export class PollExtension extends BaseExtension {
     name: string = 'pollExtension';
 
     protected async init() {
-        const { client } = useGraphQL({ dbContext: this.$guildId });
+        const { client } = useGraphQL({ guildContext: this.$guildId });
         const guild = await discord.guilds.fetch(`${decode(this.$guildId)}`);
 
         this.$state.polls = new Map<string, Poll>();

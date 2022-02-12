@@ -24,7 +24,7 @@ export class PollCommand extends BaseCommand {
     constructor(options: ICommandOptions) {
         super(options);
 
-        const { client } = useGraphQL({ dbContext: this.$guildId });
+        const { client } = useGraphQL({ guildContext: this.$guildId });
         this.client = client;
     }
 

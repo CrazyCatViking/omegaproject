@@ -1,7 +1,7 @@
 import axios from "axios";
 import { DocumentNode, print } from "graphql";
-import gql from "graphql-tag";
 import { IAccessTokens, useJwtToken } from "./useJwtToken";
+import { decode } from '../utility/hashids';
 
 const GraphQLUrl = process.env.GRAPHQL_URL as string;
 
@@ -16,7 +16,12 @@ interface IGraphQLMutation {
 }
 
 export const useGraphQL = (accessTokens: IAccessTokens) => {
-  const authHeaders = { Authorization: useJwtToken(accessTokens) };
+  const authHeaders = { Authorization: useJwtToken({
+    ...accessTokens,
+    guildContext: accessTokens.guildContext ? 
+      decode(accessTokens.guildContext)[0].toString() : 
+      undefined,
+  }) };
   const client = new GraphQLClient(GraphQLUrl, authHeaders);
 
   return {

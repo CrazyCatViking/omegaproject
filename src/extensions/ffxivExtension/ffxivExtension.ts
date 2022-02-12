@@ -9,7 +9,7 @@ export class FFXIVExtension extends BaseExtension {
     name: string = 'ffxivExtension';
 
     protected async init() {
-        const { client } = useGraphQL({ dbContext: this.$guildId });
+        const { client } = useGraphQL({ guildContext: this.$guildId });
 
         // This should somehow be handled by the extension manager
         const {data: { enableExtension }} = await client.mutation({

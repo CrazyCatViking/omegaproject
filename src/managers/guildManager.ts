@@ -7,7 +7,6 @@ import { encode } from '../utility/hashids';
 import { DiscordEventTypes, IEventPackage } from "../utility/types";
 import { useCommandNames } from "../utility/shared";
 import { setOwnerPermissions } from "../helpers/setOwnerPermissions";
-import { useGraphQL, GraphQLClient } from "../graphql/useGraphQL";
 
 export class GuildManager extends BaseManager {
     private guild: Guild;
