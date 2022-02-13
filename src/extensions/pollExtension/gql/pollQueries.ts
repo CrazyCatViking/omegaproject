@@ -5,7 +5,9 @@ const POLL_FRAGMENT = gql`
     id
     mode
     description
-    options
+    options {
+      name
+    }
     status
     pollMessageData {
       messageId

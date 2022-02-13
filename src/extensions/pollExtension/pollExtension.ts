@@ -37,7 +37,7 @@ export class PollExtension extends BaseExtension {
         if (!polls || !guild) return;
 
         polls.forEach((item: any) => {
-            this.$state.polls.set(item.id, new Poll(item.mode, item.id, item.description, item.options, item.status, item.pollMessageData));
+            this.$state.polls.set(item.id, new Poll(item.mode, item.id, item.description, item.options?.map((item: any) => item.name), item.status, item.pollMessageData));
             if (!item.pollMessageData || item.status !== PollStatus.Posted) return;
             initPoll(guild, item.pollMessageData);
         });
