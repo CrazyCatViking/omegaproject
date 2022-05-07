@@ -3,7 +3,7 @@ import { DocumentNode, print } from "graphql";
 import { IAccessTokens, useJwtToken } from "./useJwtToken";
 import { decode } from '../utility/hashids';
 
-const GraphQLUrl = process.env.GRAPHQL_URL as string;
+const GraphQLUrl = process.env.OMEGAQL_URL as string;
 
 interface IGraphQLQuery {
   query: DocumentNode,
