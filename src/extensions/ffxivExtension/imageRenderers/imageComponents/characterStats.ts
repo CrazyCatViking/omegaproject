@@ -31,7 +31,7 @@ export const characterStats = async (context: NodeCanvasRenderingContext2D, data
   const container = createContainer(context, options);
   const statsBackround = createImageElement(context, options);
 
-  const path = './src/extensions/ffxivExtension/resources/FFInfoBackround.png';
+  const path = './assets/icons/ffxiv/FFInfoBackround.png';
   const type = SourceType.LocalSource;
   await statsBackround.setImageSource({ path, type });
 
