@@ -36,7 +36,7 @@ export class GuildManager extends BaseManager {
         this.commandManager.registerCommandResponse(this.extensionManager.loadedExtensions);
         this.eventManager.registerEventResponses(this.extensionManager.loadedExtensions);
         
-        await setOwnerPermissions(this.guild);
+        // await setOwnerPermissions(this.guild);
 
         this.ready = true;
     }
