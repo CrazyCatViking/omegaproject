@@ -1,5 +1,4 @@
 pkg/
 node_modules/
 .env
-src/extensions/ffxivExtension/resources
 dist/
