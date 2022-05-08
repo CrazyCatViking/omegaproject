@@ -1,4 +1,4 @@
-import { createCanvas, NodeCanvasRenderingContext2D } from 'canvas';
+import { createCanvas, NodeCanvasRenderingContext2D, registerFont } from 'canvas';
 import BaseCanvasElement from './BaseCanvasElement';
 import Canvas from './Canvas';
 import Container from './Container';

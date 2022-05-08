@@ -1,7 +1,10 @@
+import { registerFont } from "canvas";
 import { useGranvas } from "../../../utility/granvas-js"
 import { characterStats } from "./imageComponents/characterStats";
 import { characterView } from "./imageComponents/characterView";
 import { characterFrame } from "./imageComponents/frame";
+
+registerFont('assets/fonts/PTSerif-Regular.ttf', { family: 'serif' });
 
 export const renderCharacterStats = async (data: any) => {
   const { renderImage, addElement, context } = useGranvas({ width: 1280, height: 873 });
