@@ -1,4 +1,4 @@
-import { NodeCanvasRenderingContext2D } from "canvas";
+import { CanvasRenderingContext2D } from "canvas";
 import { createGrid, createImageElement, createTextElement } from "../../../../utility/granvas-js";
 import Grid from "../../../../utility/granvas-js/Grid";
 import { AnchorPointX, AnchorPointY, IElementPosition, IGridSettings, ITextElementOptions, SourceType } from "../../../../utility/granvas-js/types"
@@ -16,7 +16,7 @@ export interface IXIVJob {
   jobUnlocked: boolean;
 }
 
-export const jobGrid = async (context: NodeCanvasRenderingContext2D, jobs: IXIVJob[]) => {
+export const jobGrid = async (context: CanvasRenderingContext2D, jobs: IXIVJob[]) => {
   const gridSettings: IGridSettings = {
     rows: 10,
     columns: 4,
@@ -61,7 +61,7 @@ export const jobGrid = async (context: NodeCanvasRenderingContext2D, jobs: IXIVJ
   return grid;
 }
 
-const jobGridItem = async (context: NodeCanvasRenderingContext2D, job: IXIVJob) => {
+const jobGridItem = async (context: CanvasRenderingContext2D, job: IXIVJob) => {
   const gridSettings: IGridSettings = {
     rows: 1,
     columns: 2,
@@ -99,7 +99,7 @@ const jobGridItem = async (context: NodeCanvasRenderingContext2D, job: IXIVJob) 
   return grid;
 };
 
-const getAllJobs = async (context: NodeCanvasRenderingContext2D, jobs: IXIVJob[]) => {
+const getAllJobs = async (context: CanvasRenderingContext2D, jobs: IXIVJob[]) => {
   // Implement sorting of jobs into the correct categories
   const jobGrids: Grid[] = [];
 

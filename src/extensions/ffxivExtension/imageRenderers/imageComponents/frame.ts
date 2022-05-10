@@ -1,8 +1,8 @@
-import { NodeCanvasRenderingContext2D } from "canvas";
+import { CanvasRenderingContext2D } from "canvas";
 import { createGrid } from "../../../../utility/granvas-js";
 import { IElementOptions, IGridSettings } from "../../../../utility/granvas-js/types";
 
-export const characterFrame = (context: NodeCanvasRenderingContext2D) => {
+export const characterFrame = (context: CanvasRenderingContext2D) => {
   const gridSettings: IGridSettings = {
     rows: 1,
     columns: 2,

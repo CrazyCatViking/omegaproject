@@ -1,4 +1,4 @@
-import { NodeCanvasRenderingContext2D } from 'canvas';
+import { CanvasRenderingContext2D } from 'canvas';
 import { 
   AnchorPointX, 
   AnchorPointY, 
@@ -22,12 +22,12 @@ const defaultSize: IElementSize = {
 };
 
 export default abstract class BaseCanvasElement {
-  context: NodeCanvasRenderingContext2D;
+  context: CanvasRenderingContext2D;
   size: IElementSize;
   position: IElementPosition;
   containerPosition: { x: number, y: number };
   
-  constructor(context: NodeCanvasRenderingContext2D, {size, position, containerPosition }: IElementOptions) {
+  constructor(context: CanvasRenderingContext2D, {size, position, containerPosition }: IElementOptions) {
     this.context = context;
     this.size = size ?? defaultSize;
     this.position = position ?? defaultPosition;

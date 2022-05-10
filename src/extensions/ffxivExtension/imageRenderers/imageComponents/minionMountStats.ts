@@ -1,4 +1,4 @@
-import { NodeCanvasRenderingContext2D } from "canvas";
+import { CanvasRenderingContext2D } from "canvas";
 import { createGrid, createTextElement } from "../../../../utility/granvas-js";
 import { AnchorPointX, AnchorPointY, IElementPosition, IGridSettings, ITextElementOptions } from "../../../../utility/granvas-js/types";
 
@@ -8,7 +8,7 @@ interface IMimoData {
   total?: number;
 }
 
-export const minionMountStats = (context: NodeCanvasRenderingContext2D, data: any) => {
+export const minionMountStats = (context: CanvasRenderingContext2D, data: any) => {
   const gridSettings: IGridSettings = {
     rows: 1,
     columns: 2,
@@ -57,7 +57,7 @@ export const minionMountStats = (context: NodeCanvasRenderingContext2D, data: an
   return grid;
 };
 
-const minionMountGrid = (context: NodeCanvasRenderingContext2D, mimoData: IMimoData) => {
+const minionMountGrid = (context: CanvasRenderingContext2D, mimoData: IMimoData) => {
   const elementSize = {
     width: 200,
     height: 50,

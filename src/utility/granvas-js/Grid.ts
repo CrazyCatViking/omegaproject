@@ -1,4 +1,4 @@
-import { NodeCanvasRenderingContext2D } from 'canvas';
+import { CanvasRenderingContext2D } from 'canvas';
 import BaseCanvasElement from './BaseCanvasElement';
 import CanvasContainer from './CanvasContainer';
 import { AnchorPointX, AnchorPointY, IElementOptions, IElementPosition, IGridPosition, IGridSettings } from './types';
@@ -6,7 +6,7 @@ import { AnchorPointX, AnchorPointY, IElementOptions, IElementPosition, IGridPos
 export default class Grid extends CanvasContainer {
   gridSettings: IGridSettings;
 
-  constructor(context: NodeCanvasRenderingContext2D, gridSettings: IGridSettings) {
+  constructor(context: CanvasRenderingContext2D, gridSettings: IGridSettings) {
     super(context, { size: { width: 0, height: 0 } });
  
     this.gridSettings = gridSettings;

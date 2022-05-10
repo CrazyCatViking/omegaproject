@@ -1,4 +1,4 @@
-import { NodeCanvasRenderingContext2D } from 'canvas';
+import { CanvasRenderingContext2D } from 'canvas';
 
 import BaseCanvasElement from "./BaseCanvasElement";
 import { IElementOptions, IElementPosition, ITextElementOptions } from "./types";
@@ -14,7 +14,7 @@ export default class ImageElement extends BaseCanvasElement {
   private _fontSize?: number;
   private _textColor = 'rgb(255, 255, 255)';
 
-  constructor(context: NodeCanvasRenderingContext2D, options?: IElementOptions) {
+  constructor(context: CanvasRenderingContext2D, options?: IElementOptions) {
     super(context, { size: defaultSize, ...options });
   }
   

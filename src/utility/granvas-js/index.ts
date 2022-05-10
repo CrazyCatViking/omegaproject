@@ -1,4 +1,4 @@
-import { createCanvas, NodeCanvasRenderingContext2D, registerFont } from 'canvas';
+import { createCanvas, CanvasRenderingContext2D, registerFont } from 'canvas';
 import BaseCanvasElement from './BaseCanvasElement';
 import Canvas from './Canvas';
 import Container from './Container';
@@ -45,18 +45,18 @@ export const useGranvas = (size: IElementSize) => {
   };
 };
 
-export const createContainer = (context: NodeCanvasRenderingContext2D, options: IElementOptions) => {
+export const createContainer = (context: CanvasRenderingContext2D, options: IElementOptions) => {
   return new Container(context, options);
 };
 
-export const createGrid = (context: NodeCanvasRenderingContext2D, gridSettings: IGridSettings) => {
+export const createGrid = (context: CanvasRenderingContext2D, gridSettings: IGridSettings) => {
   return new Grid(context, gridSettings);
 };
 
-export const createImageElement = (context: NodeCanvasRenderingContext2D, options: IElementOptions) => {
+export const createImageElement = (context: CanvasRenderingContext2D, options: IElementOptions) => {
   return new ImageElement(context, options);
 };
 
-export const createTextElement = (context: NodeCanvasRenderingContext2D, options?: IElementOptions) => {
+export const createTextElement = (context: CanvasRenderingContext2D, options?: IElementOptions) => {
   return new TextElement(context, options);
 };

@@ -1,10 +1,10 @@
-import { NodeCanvasRenderingContext2D } from "canvas";
+import { CanvasRenderingContext2D } from "canvas";
 import { createContainer, createImageElement, createTextElement } from "../../../../utility/granvas-js";
 import { AnchorPointX, AnchorPointY, IElementOptions, IElementPosition, ITextElementOptions, SourceType } from "../../../../utility/granvas-js/types";
 import { jobGrid } from "./jobLevelGrid";
 import { minionMountStats } from "./minionMountStats";
 
-export const characterStats = async (context: NodeCanvasRenderingContext2D, data: any) => {
+export const characterStats = async (context: CanvasRenderingContext2D, data: any) => {
   const options: IElementOptions = {
     size: {
       width: 640,
