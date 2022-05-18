@@ -1,9 +1,12 @@
 import axios from "axios";
+import ws from 'ws';
+import { createClient } from 'graphql-ws';
 import { DocumentNode, print } from "graphql";
 import { IAccessTokens, useJwtToken } from "./useJwtToken";
 import { decode } from '../utility/hashids';
 
 const GraphQLUrl = process.env.OMEGAQL_URL as string;
+const GraphQLWSUrl = process.env.OMEGAQL_WS_URL as string;
 
 interface IGraphQLQuery {
   query: DocumentNode,
@@ -22,10 +25,17 @@ export const useGraphQL = (accessTokens: IAccessTokens) => {
       decode(accessTokens.guildContext)[0].toString() : 
       undefined,
   }) };
+
   const client = new GraphQLClient(GraphQLUrl, authHeaders);
+
+  const wsClient = createClient({
+    url: GraphQLWSUrl,
+    webSocketImpl: ws,
+  });
 
   return {
     client,
+    wsClient,
   }
 }
 

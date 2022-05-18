@@ -11,3 +11,9 @@ export const getTwitchStream = gql`
     }
   }
 `;
+
+export const subscribe = `
+  subscription ChannelLive {
+    test
+  }
+`;
