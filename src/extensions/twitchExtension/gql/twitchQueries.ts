@@ -12,8 +12,17 @@ export const getTwitchStream = gql`
   }
 `;
 
+export const subscribeToChannel = gql`
+  mutation SubscribeToChannel($channelName: String!) {
+    subscribeToChannel(channelName: $channelName)
+  }
+`;
+
 export const subscribe = `
   subscription ChannelLive {
-    test
+    liveStreamFeed {
+      id
+      title
+    }
   }
 `;

@@ -19,7 +19,7 @@ interface IGraphQLMutation {
 }
 
 export const useGraphQL = (accessTokens: IAccessTokens) => {
-  const authHeaders = { Authorization: useJwtToken({
+  const authHeaders = { authorization: useJwtToken({
     ...accessTokens,
     guildContext: accessTokens.guildContext ? 
       decode(accessTokens.guildContext)[0].toString() : 
@@ -31,6 +31,7 @@ export const useGraphQL = (accessTokens: IAccessTokens) => {
   const wsClient = createClient({
     url: GraphQLWSUrl,
     webSocketImpl: ws,
+    connectionParams: () => ({ headers: authHeaders }),
   });
 
   return {
